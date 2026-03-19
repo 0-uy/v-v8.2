@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Veexion — Panel Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;700;800&family=Barlow:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#06090d; --surf:#0c1118; --card:#101820; --card2:#0b1219;
+      --border:#1a2535; --border2:#243448;
+      --accent:#00d4ff; --green:#00ff94; --warn:#ffb800; --danger:#ff3d3d; --purple:#a78bfa;
+      --text:#c8dde8; --text-bright:#e2f0f7; --muted:#8abcd8; --muted2:#e4a9ff;
+      --mono:'Share Tech Mono',monospace; --display:'Syne',sans-serif; --sans:'Barlow',sans-serif;
+      --shadow:0 8px 30px rgba(0,0,0,.35);
+      --glow-a:0 0 20px rgba(0,212,255,.18);
+      --glow-g:0 0 20px rgba(0,255,148,.18);
+      --glow-w:0 0 20px rgba(255,184,0,.18);
+      --glow-d:0 0 20px rgba(255,61,61,.18);
+    }
+    html,body { height:100%; background:var(--bg); color:var(--text); font-family:var(--sans); font-size:14px; }
+    body::before {
+      content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+      background-image: linear-gradient(rgba(0,212,255,.015) 1px,transparent 1px),
+                        linear-gradient(90deg,rgba(0,212,255,.015) 1px,transparent 1px);
+      background-size:52px 52px;
+    }
+
+    /* ── HEADER ── */
+    .hdr {
+      position:sticky; top:0; z-index:200;
+      height:56px; background:rgba(12,17,24,.95); border-bottom:1px solid var(--border);
+      backdrop-filter:blur(12px);
+      display:flex; align-items:center; padding:0 24px; gap:14px;
+    }
+    .hdr::after {
+      content:''; position:absolute; bottom:0; left:0; right:0; height:1px;
+      background:linear-gradient(90deg,transparent,rgba(255,184,0,.5),transparent);
+    }
+    .hdr-logo {
+      font-family:var(--mono); font-size:15px; letter-spacing:5px; color:var(--accent);
+      text-shadow:0 0 16px rgba(0,212,255,.4);
+    }
+    .hdr-badge {
+      padding:3px 10px; background:rgba(255,184,0,.1); border:1px solid var(--warn);
+      border-radius:4px; font-size:9px; letter-spacing:2px; color:var(--warn); font-family:var(--mono);
+    }
+    .hdr-right { margin-left:auto; display:flex; align-items:center; gap:10px; }
+    .hdr-user { font-family:var(--mono); font-size:10px; color:var(--muted); letter-spacing:1px; }
+    .btn-hdr {
+      padding:6px 14px; border-radius:7px; border:1px solid var(--border);
+      background:transparent; color:var(--muted); font-size:11px; cursor:pointer;
+      font-family:var(--sans); transition:all .2s;
+    }
+    .btn-hdr:hover { border-color:var(--danger); color:var(--danger); }
+
+    /* ── LAYOUT ── */
+    .main { padding:24px; max-width:1200px; margin:0 auto; display:flex; flex-direction:column; gap:20px; position:relative; z-index:1; }
+
+    /* ── SECTION HEADER ── */
+    .sec-title {
+      font-size:9px; letter-spacing:2.5px; text-transform:uppercase; color:var(--muted2);
+      margin-bottom:16px; display:flex; align-items:center; gap:10px;
+      font-family:var(--mono);
+    }
+    .sec-title::after { content:''; flex:1; height:1px; background:var(--border); }
+
+    /* ── CARDS ── */
+    .card {
+      background:linear-gradient(180deg,rgba(16,24,32,.98),rgba(12,17,24,.98));
+      border:1px solid var(--border); border-radius:12px; box-shadow:var(--shadow);
+      position:relative; overflow:hidden;
+    }
+    .card::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:1px;
+      background:linear-gradient(90deg,transparent 10%,rgba(0,212,255,.08) 50%,transparent 90%);
+    }
+    .card-body { padding:22px; }
+
+    /* ── PLANS LEGEND ── */
+    .plans-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .plan-legend {
+      background:var(--card2); border:1px solid var(--border); border-radius:10px;
+      padding:16px 18px; display:flex; align-items:flex-start; gap:14px;
+      transition:border-color .2s;
+    }
+    .plan-legend.basico { border-top:2px solid var(--accent); }
+    .plan-legend.pro    { border-top:2px solid var(--warn); }
+    .plan-legend:hover  { border-color:rgba(0,212,255,.2); }
+    .plan-icon { font-size:24px; flex-shrink:0; }
+    .plan-info h3 { font-size:13px; font-weight:700; margin-bottom:4px; }
+    .plan-info h3.basico { color:var(--accent); }
+    .plan-info h3.pro    { color:var(--warn); }
+    .plan-info p { font-size:11px; color:var(--muted); line-height:1.7; }
+    .plan-feats { display:flex; gap:5px; flex-wrap:wrap; margin-top:8px; }
+    .feat-tag { font-size:9px; padding:2px 7px; border-radius:3px; border:1px solid var(--border); color:var(--muted2); }
+    .feat-tag.on   { color:var(--accent); border-color:rgba(0,212,255,.3); background:rgba(0,212,255,.06); }
+    .feat-tag.warn { color:var(--warn);   border-color:rgba(255,184,0,.3);  background:rgba(255,184,0,.06); }
+
+    /* ── CREATE FORM ── */
+    .create-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .field label {
+      display:block; font-size:9px; letter-spacing:2px; text-transform:uppercase;
+      color:var(--muted); margin-bottom:7px; font-family:var(--mono);
+    }
+    .field input {
+      width:100%; padding:10px 13px; background:rgba(0,0,0,.3);
+      border:1px solid var(--border); border-radius:8px;
+      color:var(--text); font-family:var(--mono); font-size:13px; outline:none;
+      transition:border-color .2s, box-shadow .2s;
+    }
+    .field input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(0,212,255,.07); }
+    .field input::placeholder { color:var(--muted2); opacity:.6; }
+
+    .plan-selector { display:flex; gap:8px; }
+    .plan-opt {
+      flex:1; padding:10px 12px; border-radius:7px; cursor:pointer;
+      border:1.5px solid var(--border); background:transparent;
+      transition:all .2s; text-align:center; font-family:var(--sans);
+    }
+    .plan-opt:hover { border-color:var(--accent); }
+    .plan-opt.sel-basico { border-color:var(--accent); background:rgba(0,212,255,.08); }
+    .plan-opt.sel-pro    { border-color:var(--warn);   background:rgba(255,184,0,.08); }
+    .plan-opt-name { font-size:12px; font-weight:700; letter-spacing:1px; }
+    .plan-opt-desc { font-size:10px; color:var(--muted); margin-top:2px; }
+    .plan-opt.sel-basico .plan-opt-name { color:var(--accent); }
+    .plan-opt.sel-pro    .plan-opt-name { color:var(--warn); }
+
+    .pass-note {
+      grid-column:1/-1; font-size:11px; color:var(--muted); font-family:var(--mono);
+      padding:8px 12px; background:rgba(0,212,255,.03); border:1px solid rgba(0,212,255,.1); border-radius:6px;
+    }
+    .creds-box {
+      grid-column:1/-1; padding:14px 16px;
+      background:rgba(0,255,148,.04); border:1px solid rgba(0,255,148,.25); border-radius:8px;
+      font-family:var(--mono); font-size:12px; line-height:2; color:var(--green); display:none;
+    }
+    .creds-box.show { display:block; animation:fadeIn .3s ease; }
+    .creds-title { font-size:9px; letter-spacing:2px; color:var(--muted); margin-bottom:8px; display:block; }
+    .copy-btn {
+      margin-left:10px; padding:2px 10px; background:transparent;
+      border:1px solid rgba(0,255,148,.3); border-radius:4px;
+      color:var(--green); font-size:10px; cursor:pointer; transition:all .2s;
+    }
+    .copy-btn:hover { background:rgba(0,255,148,.08); }
+    .btn-create {
+      grid-column:1/-1; width:fit-content;
+      padding:11px 24px; background:rgba(0,255,148,.08); border:1px solid var(--green);
+      border-radius:8px; color:var(--green); font-size:12px; font-weight:700;
+      letter-spacing:1px; cursor:pointer; font-family:var(--sans); transition:all .2s;
+    }
+    .btn-create:hover { background:rgba(0,255,148,.16); box-shadow:var(--glow-g); transform:translateY(-1px); }
+    .btn-create:disabled { opacity:.4; cursor:not-allowed; transform:none; }
+
+    /* ── STATS ROW ── */
+    .stats-row { display:grid; grid-template-columns:repeat(5,1fr); gap:10px; margin-bottom:18px; }
+    .stat-mini {
+      background:rgba(0,0,0,.2); border:1px solid var(--border); border-radius:8px;
+      padding:12px 14px; text-align:center; transition:border-color .2s;
+    }
+    .stat-mini:hover { border-color:rgba(0,212,255,.15); }
+    .stat-mini-n { font-family:var(--mono); font-size:22px; line-height:1; }
+    .stat-mini-n.accent { color:var(--accent); }
+    .stat-mini-n.warn   { color:var(--warn); }
+    .stat-mini-n.green  { color:var(--green); }
+    .stat-mini-n.danger { color:var(--danger); }
+    .stat-mini-l { font-size:9px; color:var(--muted2); letter-spacing:1px; text-transform:uppercase; margin-top:4px; font-family:var(--mono); }
+
+    /* ── SEARCH ── */
+    .clients-toolbar { display:flex; align-items:center; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+    .search-wrap { position:relative; flex:1; min-width:200px; }
+    .search-wrap svg { position:absolute; left:11px; top:50%; transform:translateY(-50%); opacity:.4; pointer-events:none; }
+    .search-input {
+      width:100%; padding:9px 12px 9px 34px;
+      background:var(--card2); border:1px solid var(--border); border-radius:8px;
+      color:var(--text); font-family:var(--mono); font-size:12px; outline:none;
+      transition:border-color .2s, box-shadow .2s;
+    }
+    .search-input:focus { border-color:rgba(0,212,255,.3); box-shadow:0 0 0 3px rgba(0,212,255,.06); }
+    .search-input::placeholder { color:var(--muted2); opacity:.6; }
+    .filter-btns { display:flex; gap:6px; }
+    .filter-btn {
+      padding:7px 12px; border-radius:7px; border:1px solid var(--border);
+      background:transparent; color:var(--muted); font-size:11px; cursor:pointer;
+      font-family:var(--sans); transition:all .18s; white-space:nowrap;
+    }
+    .filter-btn:hover { border-color:rgba(0,212,255,.2); color:var(--accent); }
+    .filter-btn.active { border-color:rgba(0,212,255,.3); color:var(--accent); background:rgba(0,212,255,.06); }
+    .filter-btn.active.f-pro { border-color:rgba(255,184,0,.3); color:var(--warn); background:rgba(255,184,0,.06); }
+    .refresh-btn {
+      padding:7px 12px; border-radius:7px; border:1px solid var(--border);
+      background:transparent; color:var(--muted); font-size:11px; cursor:pointer;
+      font-family:var(--sans); transition:all .18s;
+    }
+    .refresh-btn:hover { border-color:rgba(0,212,255,.2); color:var(--accent); }
+
+    /* ── TABLE ── */
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; min-width:700px; }
+    thead tr { border-bottom:1px solid var(--border2); }
+    th {
+      text-align:left; font-size:9px; letter-spacing:2px; text-transform:uppercase;
+      color:var(--muted2); padding:8px 12px; font-family:var(--mono); font-weight:600; white-space:nowrap;
+    }
+    tbody tr { border-bottom:1px solid rgba(26,37,53,.5); transition:background .15s; }
+    tbody tr:last-child { border-bottom:none; }
+    tbody tr:hover { background:rgba(0,212,255,.02); }
+    td { padding:11px 12px; font-size:13px; vertical-align:middle; }
+    td.mono { font-family:var(--mono); font-size:11px; color:var(--muted); }
+    td.nombre strong { color:var(--text-bright); }
+    td.nombre small  { display:block; font-size:10px; color:var(--muted); margin-top:2px; }
+    .loading-row td { text-align:center; color:var(--muted); padding:32px; font-size:12px; letter-spacing:2px; font-family:var(--mono); }
+
+    .badge {
+      display:inline-block; padding:2px 8px; border-radius:4px;
+      font-size:9px; letter-spacing:1px; font-weight:700; white-space:nowrap; font-family:var(--mono);
+    }
+    .badge-activo  { background:rgba(0,255,148,.08);  border:1px solid rgba(0,255,148,.25);  color:var(--green); }
+    .badge-inactivo{ background:rgba(58,84,104,.15);  border:1px solid var(--muted2);        color:var(--muted); }
+    .badge-basico  { background:rgba(0,212,255,.08);  border:1px solid rgba(0,212,255,.25);  color:var(--accent); }
+    .badge-pro     { background:rgba(255,184,0,.08);  border:1px solid rgba(255,184,0,.25);  color:var(--warn); }
+
+    .row-actions { display:flex; gap:5px; align-items:center; flex-wrap:wrap; }
+    .row-btn {
+      padding:5px 10px; border-radius:5px; border:1px solid var(--border);
+      background:transparent; color:var(--muted); font-size:11px; cursor:pointer;
+      font-family:var(--sans); transition:all .18s; white-space:nowrap;
+    }
+    .row-btn:hover     { border-color:var(--accent); color:var(--accent); }
+    .row-btn.del:hover { border-color:var(--danger); color:var(--danger); }
+    .row-btn.upgrade   { border-color:rgba(255,184,0,.3); color:var(--warn); }
+    .row-btn.upgrade:hover { background:rgba(255,184,0,.08); }
+    .row-btn.view      { border-color:rgba(167,139,250,.3); color:var(--purple); }
+    .row-btn.view:hover{ background:rgba(167,139,250,.08); }
+    .row-btn.reset     { border-color:rgba(0,212,255,.25); color:var(--accent); }
+    .row-btn.reset:hover{ background:rgba(0,212,255,.08); }
+
+    /* ── MODALS ── */
+    .backdrop {
+      position:fixed; inset:0; background:rgba(0,0,0,.8); z-index:1000;
+      display:flex; align-items:center; justify-content:center;
+      backdrop-filter:blur(4px);
+    }
+    .backdrop.hidden { display:none; }
+    .modal-box {
+      background:linear-gradient(180deg,#0f1820,#0c131b);
+      border:1px solid rgba(0,212,255,.18); border-radius:14px;
+      width:90%; max-width:460px; overflow:hidden;
+      box-shadow:0 20px 60px rgba(0,0,0,.7); animation:fadeIn .22s ease;
+    }
+    .modal-head {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:16px 20px; border-bottom:1px solid rgba(255,255,255,.05);
+    }
+    .modal-head h3 { font-family:var(--mono); font-size:10px; letter-spacing:2px; color:var(--accent); }
+    .modal-close {
+      background:none; border:1px solid var(--border); color:var(--muted);
+      font-size:14px; cursor:pointer; padding:3px 8px; border-radius:4px; transition:all .2s;
+    }
+    .modal-close:hover { color:var(--danger); border-color:rgba(255,61,61,.3); }
+    .modal-body { padding:22px; display:flex; flex-direction:column; gap:16px; }
+    .modal-client-name { font-size:15px; font-weight:600; color:var(--text-bright); }
+    .modal-client-email { font-family:var(--mono); font-size:11px; color:var(--muted); }
+
+    /* Edit modal fields */
+    .modal-fields { display:flex; flex-direction:column; gap:12px; }
+    .modal-plan-opts { display:flex; gap:10px; }
+    .modal-plan-opt {
+      flex:1; padding:13px 10px; border-radius:8px; cursor:pointer;
+      border:1.5px solid var(--border); background:transparent;
+      transition:all .2s; text-align:center;
+    }
+    .modal-plan-opt:hover { border-color:var(--accent); }
+    .modal-plan-opt.sel-basico { border-color:var(--accent); background:rgba(0,212,255,.08); }
+    .modal-plan-opt.sel-pro    { border-color:var(--warn);   background:rgba(255,184,0,.08); }
+    .modal-plan-opt .mpo-icon { font-size:20px; margin-bottom:5px; }
+    .modal-plan-opt .mpo-name { font-size:11px; font-weight:700; letter-spacing:1px; }
+    .modal-plan-opt .mpo-desc { font-size:10px; color:var(--muted); margin-top:2px; }
+    .modal-plan-opt.sel-basico .mpo-name { color:var(--accent); }
+    .modal-plan-opt.sel-pro    .mpo-name { color:var(--warn); }
+    .modal-save {
+      width:100%; padding:11px; background:rgba(0,212,255,.08); border:1px solid var(--accent);
+      border-radius:7px; color:var(--accent); font-size:13px; font-weight:700;
+      letter-spacing:1px; cursor:pointer; font-family:var(--sans); transition:all .2s;
+    }
+    .modal-save:hover { background:rgba(0,212,255,.16); box-shadow:var(--glow-a); }
+    .modal-save:disabled { opacity:.4; cursor:not-allowed; }
+    .modal-save.green { border-color:var(--green); color:var(--green); background:rgba(0,255,148,.06); }
+    .modal-save.green:hover { background:rgba(0,255,148,.14); box-shadow:var(--glow-g); }
+
+    /* ── CONFIRM MODAL ── */
+    .confirm-box {
+      background:linear-gradient(180deg,#0f1820,#0c131b);
+      border:1px solid rgba(255,61,61,.2); border-radius:14px;
+      width:90%; max-width:380px; padding:28px;
+      text-align:center; box-shadow:0 20px 60px rgba(0,0,0,.7); animation:fadeIn .22s ease;
+    }
+    .confirm-icon { font-size:34px; margin-bottom:12px; }
+    .confirm-title { font-size:15px; font-weight:700; color:var(--text); margin-bottom:8px; }
+    .confirm-msg { font-size:12px; color:var(--muted); line-height:1.6; margin-bottom:22px; }
+    .confirm-btns { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .confirm-btn {
+      padding:11px; border-radius:8px; border:1px solid var(--border);
+      background:transparent; color:var(--text); font-size:13px; font-weight:600;
+      cursor:pointer; font-family:var(--sans); transition:all .18s;
+    }
+    .confirm-btn.ok { color:var(--danger); border-color:rgba(255,61,61,.3); background:rgba(255,61,61,.06); }
+    .confirm-btn.ok:hover { background:rgba(255,61,61,.14); }
+    .confirm-btn.cancel:hover { color:var(--accent); border-color:rgba(0,212,255,.3); }
+
+    /* ── CLIENT DRAWER (actividad) ── */
+    .drawer-back {
+      position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:500;
+      opacity:0; pointer-events:none; transition:.25s ease; backdrop-filter:blur(2px);
+    }
+    .drawer-back.show { opacity:1; pointer-events:all; }
+    .drawer {
+      position:fixed; top:0; right:-520px; width:520px; max-width:100%;
+      height:100vh; background:linear-gradient(180deg,#0d131a,#0b1016);
+      border-left:1px solid var(--border); box-shadow:-14px 0 50px rgba(0,0,0,.5);
+      z-index:600; transition:right .28s cubic-bezier(.4,0,.2,1);
+      display:flex; flex-direction:column; overflow:hidden;
+    }
+    .drawer.open { right:0; }
+    .drawer-head {
+      padding:18px 20px; border-bottom:1px solid rgba(255,255,255,.05);
+      display:flex; align-items:flex-start; justify-content:space-between; flex-shrink:0;
+    }
+    .drawer-client { }
+    .drawer-client-name { font-size:15px; font-weight:700; color:var(--text-bright); margin-bottom:3px; }
+    .drawer-client-meta { font-family:var(--mono); font-size:10px; color:var(--muted); }
+    .drawer-close {
+      background:none; border:1px solid var(--border); color:var(--muted);
+      font-size:14px; cursor:pointer; padding:4px 10px; border-radius:5px;
+      transition:all .2s; flex-shrink:0;
+    }
+    .drawer-close:hover { color:var(--danger); border-color:rgba(255,61,61,.3); }
+    .drawer-tabs { display:flex; border-bottom:1px solid var(--border); flex-shrink:0; }
+    .dtab {
+      flex:1; padding:10px; text-align:center; font-size:10px; letter-spacing:1.5px;
+      text-transform:uppercase; color:var(--muted); cursor:pointer; font-family:var(--mono);
+      border-bottom:2px solid transparent; transition:all .2s;
+    }
+    .dtab:hover { color:var(--accent); }
+    .dtab.active { color:var(--accent); border-bottom-color:var(--accent); }
+    .drawer-body { flex:1; overflow-y:auto; padding:16px 20px; }
+    .drawer-body::-webkit-scrollbar { width:4px; }
+    .drawer-body::-webkit-scrollbar-thumb { background:var(--border); border-radius:999px; }
+
+    /* Eventos en el drawer */
+    .ev-item {
+      display:grid; grid-template-columns:72px 1fr; gap:10px; align-items:center;
+      background:var(--card2); border:1px solid var(--border); border-left:3px solid transparent;
+      border-radius:9px; padding:9px 12px; margin-bottom:8px; cursor:pointer;
+      transition:all .18s;
+    }
+    .ev-item:hover { border-color:rgba(0,212,255,.2); transform:translateX(2px); }
+    .ev-item.sev-high   { border-left-color:var(--danger); }
+    .ev-item.sev-medium { border-left-color:var(--warn); }
+    .ev-item.sev-low    { border-left-color:var(--accent); }
+    .ev-thumb {
+      width:72px; height:48px; border-radius:6px; object-fit:cover;
+      background:#000; display:block;
+    }
+    .ev-thumb-ph {
+      width:72px; height:48px; border-radius:6px;
+      background:#0b1219; border:1px solid var(--border);
+      display:grid; place-items:center; font-size:20px; color:var(--muted2);
+    }
+    .ev-tipo { font-size:12px; font-weight:600; color:var(--text); margin-bottom:3px; }
+    .ev-meta { font-size:10px; color:var(--muted); font-family:var(--mono); }
+    .sev-pill-sm {
+      display:inline-block; padding:1px 5px; border-radius:3px; font-size:8px;
+      font-family:var(--mono); letter-spacing:.5px; margin-left:5px;
+      font-weight:700; vertical-align:middle;
+    }
+    .sev-pill-sm.high   { color:var(--danger); background:rgba(255,61,61,.1);  border:1px solid rgba(255,61,61,.2); }
+    .sev-pill-sm.medium { color:var(--warn);   background:rgba(255,184,0,.1);  border:1px solid rgba(255,184,0,.2); }
+    .sev-pill-sm.low    { color:var(--accent); background:rgba(0,212,255,.08); border:1px solid rgba(0,212,255,.18); }
+
+    /* Snapshot lightbox inside drawer */
+    .snap-lightbox {
+      display:none; position:fixed; inset:0; z-index:900;
+      background:rgba(0,0,0,.94); align-items:center; justify-content:center;
+      backdrop-filter:blur(6px);
+    }
+    .snap-lightbox.show { display:flex; }
+    .snap-lightbox img { max-width:90vw; max-height:88vh; border-radius:8px; box-shadow:0 0 60px rgba(0,0,0,.7); }
+    .snap-lightbox-close {
+      position:absolute; top:16px; right:16px; width:38px; height:38px;
+      border-radius:50%; background:rgba(0,0,0,.7); border:1px solid rgba(255,255,255,.15);
+      color:#fff; font-size:16px; cursor:pointer; display:grid; place-items:center;
+      transition:all .2s;
+    }
+    .snap-lightbox-close:hover { color:var(--danger); border-color:rgba(255,61,61,.4); }
+
+    /* Info tab */
+    .info-row {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 0; border-bottom:1px solid rgba(255,255,255,.04);
+    }
+    .info-row:last-child { border-bottom:none; }
+    .info-k { font-size:10px; letter-spacing:1.5px; color:var(--muted); text-transform:uppercase; font-family:var(--mono); }
+    .info-v { font-size:12px; color:var(--text); font-family:var(--mono); }
+    .info-v.accent { color:var(--accent); }
+    .info-v.warn   { color:var(--warn); }
+    .info-v.green  { color:var(--green); }
+
+    /* Empty state */
+    .empty-state { text-align:center; padding:40px 20px; color:var(--muted); }
+    .empty-state .ei { font-size:32px; margin-bottom:12px; opacity:.4; display:block; }
+    .empty-state p { font-size:12px; }
+
+    /* Drawer loading */
+    .drawer-loading { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:40px; }
+    .drawer-spinner {
+      width:28px; height:28px; border:2px solid rgba(0,212,255,.15);
+      border-top-color:var(--accent); border-radius:50%; animation:spin .7s linear infinite;
+    }
+    .drawer-loading p { font-family:var(--mono); font-size:10px; letter-spacing:2px; color:var(--muted); }
+
+    /* ── TOAST ── */
+    .toast-wrap { position:fixed; bottom:22px; right:22px; z-index:9999; display:flex; flex-direction:column; gap:7px; }
+    .toast {
+      padding:11px 18px; border-radius:9px; font-size:12px; font-family:var(--mono);
+      background:var(--card); border:1px solid var(--green); color:var(--green);
+      box-shadow:0 4px 20px rgba(0,0,0,.5); min-width:220px;
+      animation:toastIn .3s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    .toast.out  { animation:toastOut .25s ease both; }
+    .toast.err  { border-color:var(--danger); color:var(--danger); }
+    .toast.info { border-color:var(--accent); color:var(--accent); }
+    .toast.warn { border-color:var(--warn);   color:var(--warn); }
+
+    @keyframes spin     { to { transform:rotate(360deg); } }
+    @keyframes fadeIn   { from { opacity:0; transform:scale(.96); } to { opacity:1; transform:scale(1); } }
+    @keyframes toastIn  { from { opacity:0; transform:translateX(16px) scale(.96); } to { opacity:1; transform:translateX(0) scale(1); } }
+    @keyframes toastOut { from { opacity:1; } to { opacity:0; transform:translateX(16px) scale(.96); } }
+
+    @media(max-width:768px) {
+      .plans-grid { grid-template-columns:1fr; }
+      .stats-row  { grid-template-columns:repeat(3,1fr); }
+      .create-grid{ grid-template-columns:1fr; }
+      .drawer     { width:100%; }
+    }
+    @media(max-width:480px) {
+      .stats-row { grid-template-columns:1fr 1fr; }
+      .filter-btns { display:none; }
+    }
+  </style>
+</head>
+<body style="visibility:hidden">
+
+<!-- HEADER -->
+<header class="hdr">
+  <span class="hdr-logo">Veexion</span>
+  <span class="hdr-badge">★ ADMIN</span>
+  <div class="hdr-right">
+    <span class="hdr-user" id="hdrUser">—</span>
+    <button class="btn-hdr" id="btnLogout">⏻ Salir</button>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- Plans legend -->
+  <div class="card">
+    <div class="card-body">
+      <div class="sec-title">Planes disponibles</div>
+      <div class="plans-grid">
+        <div class="plan-legend basico">
+          <div class="plan-icon">📦</div>
+          <div class="plan-info">
+            <h3 class="basico">Plan Básico</h3>
+            <p>Una cámara simultánea. Ideal para locales chicos.</p>
+            <div class="plan-feats">
+              <span class="feat-tag on">1 cámara</span>
+              <span class="feat-tag on">Detección IA</span>
+              <span class="feat-tag on">Historial 48hs</span>
+              <span class="feat-tag">Multi-cam ✗</span>
+            </div>
+          </div>
+        </div>
+        <div class="plan-legend pro">
+          <div class="plan-icon">⭐</div>
+          <div class="plan-info">
+            <h3 class="pro">Plan Profesional</h3>
+            <p>Tres cámaras simultáneas con vista multi-cam.</p>
+            <div class="plan-feats">
+              <span class="feat-tag warn">3 cámaras</span>
+              <span class="feat-tag on">Detección IA</span>
+              <span class="feat-tag on">Historial 48hs</span>
+              <span class="feat-tag warn">Multi-cam ✓</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create client -->
+  <div class="card">
+    <div class="card-body">
+      <div class="sec-title">Crear nuevo cliente</div>
+      <div class="create-grid">
+        <div class="field">
+          <label>Nombre de la empresa</label>
+          <input type="text" id="newNombre" placeholder="Ej: Supermercado Pérez"/>
+        </div>
+        <div class="field">
+          <label>Email del cliente</label>
+          <input type="email" id="newEmail" placeholder="cliente@empresa.com"/>
+        </div>
+        <div class="field" style="grid-column:1/-1">
+          <label>Plan</label>
+          <div class="plan-selector" id="planSelector">
+            <div class="plan-opt sel-basico" data-plan="basico">
+              <div class="plan-opt-name">📦 BÁSICO</div>
+              <div class="plan-opt-desc">1 cámara · desde $XX/mes</div>
+            </div>
+            <div class="plan-opt" data-plan="pro">
+              <div class="plan-opt-name">⭐ PROFESIONAL</div>
+              <div class="plan-opt-desc">3 cámaras · Multi-cam · desde $XX/mes</div>
+            </div>
+          </div>
+          <input type="hidden" id="newPlan" value="basico"/>
+        </div>
+        <div class="pass-note">
+          ℹ️ Se genera una contraseña temporal automáticamente. Copiála y enviásela al cliente. Puede cambiarla desde su panel en cualquier momento.
+        </div>
+        <div class="creds-box" id="credsBox">
+          <span class="creds-title">✅ CLIENTE CREADO — CREDENCIALES DE ACCESO</span>
+          <div id="credsContent"></div>
+          <button class="copy-btn" id="copyCredsBtn">📋 Copiar</button>
+        </div>
+        <button class="btn-create" id="btnCreate">+ Crear cliente</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Clients list -->
+  <div class="card">
+    <div class="card-body">
+      <div class="sec-title">Clientes registrados</div>
+
+      <!-- Stats -->
+      <div class="stats-row" id="statsRow" style="display:none">
+        <div class="stat-mini"><div class="stat-mini-n accent" id="sTotal">0</div><div class="stat-mini-l">Total</div></div>
+        <div class="stat-mini"><div class="stat-mini-n green"  id="sActivos">0</div><div class="stat-mini-l">Activos</div></div>
+        <div class="stat-mini"><div class="stat-mini-n accent" id="sBasico">0</div><div class="stat-mini-l">Plan Básico</div></div>
+        <div class="stat-mini"><div class="stat-mini-n warn"   id="sPro">0</div><div class="stat-mini-l">Plan Pro</div></div>
+        <div class="stat-mini"><div class="stat-mini-n danger" id="sInactivos">0</div><div class="stat-mini-l">Inactivos</div></div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="clients-toolbar">
+        <div class="search-wrap">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <input class="search-input" id="searchClients" placeholder="Buscar por nombre o email…" type="text"/>
+        </div>
+        <div class="filter-btns">
+          <button class="filter-btn active" data-f="all">Todos</button>
+          <button class="filter-btn" data-f="activo">Activos</button>
+          <button class="filter-btn f-pro" data-f="pro">⭐ Pro</button>
+          <button class="filter-btn" data-f="inactivo">Inactivos</button>
+        </div>
+        <button class="refresh-btn" id="btnRefresh">↻ Actualizar</button>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Empresa</th>
+              <th>Email</th>
+              <th>Plan</th>
+              <th>Estado</th>
+              <th>Creado</th>
+              <th>Eventos 48hs</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="clientesBody">
+            <tr class="loading-row"><td colspan="7">Cargando clientes…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- Modal: editar cliente (nombre + plan) -->
+<div class="backdrop hidden" id="editBackdrop">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>EDITAR CLIENTE</h3>
+      <button class="modal-close" id="editClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-fields">
+        <div class="field">
+          <label>Nombre de la empresa</label>
+          <input type="text" id="editNombre" placeholder="Nombre de la empresa"/>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="editEmail" placeholder="email@empresa.com"/>
+        </div>
+        <div>
+          <div class="field"><label>Plan</label></div>
+          <div class="modal-plan-opts">
+            <div class="modal-plan-opt" data-plan="basico" id="epoBasico">
+              <div class="mpo-icon">📦</div>
+              <div class="mpo-name">BÁSICO</div>
+              <div class="mpo-desc">1 cámara</div>
+            </div>
+            <div class="modal-plan-opt" data-plan="pro" id="epoPro">
+              <div class="mpo-icon">⭐</div>
+              <div class="mpo-name">PRO</div>
+              <div class="mpo-desc">3 cámaras · Multi-cam</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="modal-save" id="editSave">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: reset password -->
+<div class="backdrop hidden" id="resetBackdrop">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>RESET CONTRASEÑA</h3>
+      <button class="modal-close" id="resetClose">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-client-name" id="resetNombre">—</div>
+      <div class="modal-client-email" id="resetEmail">—</div>
+      <p style="font-size:12px;color:var(--muted);line-height:1.7;margin-top:4px;">
+        Se enviará un correo de restablecimiento de contraseña a la dirección del cliente.
+        El cliente recibirá un link para crear una nueva contraseña.
+      </p>
+      <button class="modal-save green" id="resetSend">📧 Enviar correo de restablecimiento</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: confirmar eliminación -->
+<div class="backdrop hidden" id="confirmBackdrop">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑</div>
+    <div class="confirm-title" id="confirmTitle">¿Confirmar acción?</div>
+    <div class="confirm-msg" id="confirmMsg">Esta acción no se puede deshacer.</div>
+    <div class="confirm-btns">
+      <button class="confirm-btn cancel" id="confirmCancel">Cancelar</button>
+      <button class="confirm-btn ok" id="confirmOk">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Drawer: actividad del cliente -->
+<div class="drawer-back" id="drawerBack"></div>
+<div class="drawer" id="actDrawer">
+  <div class="drawer-head">
+    <div class="drawer-client">
+      <div class="drawer-client-name" id="drawerNombre">—</div>
+      <div class="drawer-client-meta" id="drawerMeta">—</div>
+    </div>
+    <button class="drawer-close" id="drawerClose">✕</button>
+  </div>
+  <div class="drawer-tabs">
+    <div class="dtab active" data-tab="eventos">📋 Eventos</div>
+    <div class="dtab" data-tab="info">ℹ Info</div>
+  </div>
+  <div class="drawer-body" id="drawerBody">
+    <div class="drawer-loading">
+      <div class="drawer-spinner"></div>
+      <p>Cargando actividad…</p>
+    </div>
+  </div>
+</div>
+
+<!-- Snapshot lightbox -->
+<div class="snap-lightbox" id="snapLightbox">
+  <button class="snap-lightbox-close" id="snapClose">✕</button>
+  <img id="snapImg" src="" alt="Snapshot">
+</div>
+
+<!-- Toasts -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script type="module">
+import {
+  onAuth, logout, getAllEmpresas, createEmpresa, isAdmin,
+  updateEmpresa, getEventos, enviarResetPassword
+} from './firebase-config.js';
+
+const API_KEY = 'AIzaSyC4lNSyk8VvQGu0Nb7zfvUsfc34K-xtUzk';
+
+let allEmpresas   = [];
+let filteredList  = [];
+let searchText    = '';
+let currentFilter = 'all';
+let editingUid    = null;
+let editingPlan   = 'basico';
+let drawerUid     = null;
+let drawerData    = null; // { empresa, eventos }
+let drawerTab     = 'eventos';
+
+// ── AUTH ──────────────────────────────────────────────────────────────────
+onAuth(async (user) => {
+  if (!user) { window.location.href = 'login.html'; return; }
+  if (!isAdmin(user)) { window.location.href = 'dashboard.html'; return; }
+  // Only reveal UI after confirming admin — prevents flash for non-admin users
+  document.body.style.visibility = 'visible';
+  document.getElementById('hdrUser').textContent = user.email;
+  await loadClients();
+});
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+function escHtml(s='') {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+const timeAgo = ms => {
+  const s = Math.floor((Date.now()-ms)/1000);
+  if(s<60) return `${s}s`; if(s<3600) return `${Math.floor(s/60)}m`;
+  if(s<86400) return `${Math.floor(s/3600)}h`; return `${Math.floor(s/86400)}d`;
+};
+
+// ── TOAST ─────────────────────────────────────────────────────────────────
+function toast(msg, type='ok', dur=3200) {
+  const wrap = document.getElementById('toastWrap');
+  const el = document.createElement('div');
+  el.className = `toast${type==='err'?' err':type==='info'?' info':type==='warn'?' warn':''}`;
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(()=>{ el.classList.add('out'); el.addEventListener('animationend',()=>el.remove()); }, dur);
+}
+
+// ── CONFIRM ───────────────────────────────────────────────────────────────
+function showConfirm({title,msg,okLabel='Eliminar'}) {
+  return new Promise(resolve => {
+    document.getElementById('confirmTitle').textContent = title;
+    document.getElementById('confirmMsg').textContent   = msg;
+    document.getElementById('confirmOk').textContent    = okLabel;
+    document.getElementById('confirmBackdrop').classList.remove('hidden');
+    const cleanup = v => {
+      document.getElementById('confirmBackdrop').classList.add('hidden');
+      document.getElementById('confirmOk').replaceWith(document.getElementById('confirmOk').cloneNode(true));
+      document.getElementById('confirmCancel').replaceWith(document.getElementById('confirmCancel').cloneNode(true));
+      resolve(v);
+    };
+    document.getElementById('confirmOk').addEventListener('click',()=>cleanup(true),{once:true});
+    document.getElementById('confirmCancel').addEventListener('click',()=>cleanup(false),{once:true});
+  });
+}
+
+// ── PLAN SELECTOR (create form) ───────────────────────────────────────────
+document.querySelectorAll('#planSelector .plan-opt').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('#planSelector .plan-opt').forEach(o=>o.className='plan-opt');
+    opt.className = `plan-opt sel-${opt.dataset.plan}`;
+    document.getElementById('newPlan').value = opt.dataset.plan;
+  });
+});
+
+// ── CREATE CLIENT ─────────────────────────────────────────────────────────
+document.getElementById('btnCreate').addEventListener('click', async () => {
+  const nombre = document.getElementById('newNombre').value.trim();
+  const email  = document.getElementById('newEmail').value.trim();
+  const plan   = document.getElementById('newPlan').value;
+  if (!nombre || !email) { toast('Completá nombre y email','err'); return; }
+  if (!email.includes('@')) { toast('Email inválido','err'); return; }
+
+  const btn = document.getElementById('btnCreate');
+  btn.disabled=true; btn.textContent='Creando…';
+  try {
+    const tempPass = 'VEX-' + Math.random().toString(36).slice(2,8).toUpperCase() + '!';
+    const resp = await fetch(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${API_KEY}`,
+      { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({email,password:tempPass,returnSecureToken:true}) }
+    );
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message);
+    const uid = data.localId;
+    await createEmpresa(uid, {nombre, email, plan});
+
+    const credsText = `URL: ${location.origin}/login.html\nEmail: ${email}\nContraseña temporal: ${tempPass}\nPlan: ${plan.toUpperCase()}`;
+    document.getElementById('credsContent').innerHTML =
+      `URL: <strong>${location.origin}/login.html</strong><br>` +
+      `Email: <strong>${email}</strong><br>` +
+      `Contraseña temporal: <strong>${tempPass}</strong><br>` +
+      `Plan asignado: <strong style="color:${plan==='pro'?'var(--warn)':'var(--accent)'}">${plan.toUpperCase()}</strong>`;
+    document.getElementById('credsBox').classList.add('show');
+    document.getElementById('copyCredsBtn').onclick = () => {
+      navigator.clipboard.writeText(credsText);
+      toast('Credenciales copiadas ✓','info');
+    };
+
+    toast(`Cliente "${nombre}" creado — Plan ${plan.toUpperCase()} ✓`);
+    document.getElementById('newNombre').value='';
+    document.getElementById('newEmail').value='';
+    await loadClients();
+  } catch(err) {
+    const msgs = {'EMAIL_EXISTS':'Ya existe un cliente con ese email.','INVALID_EMAIL':'Email no válido.'};
+    toast(msgs[err.message]||`Error: ${err.message}`,'err');
+  } finally {
+    btn.disabled=false; btn.textContent='+ Crear cliente';
+  }
+});
+
+// ── LOAD & RENDER CLIENTS ─────────────────────────────────────────────────
+async function loadClients() {
+  document.getElementById('clientesBody').innerHTML =
+    '<tr class="loading-row"><td colspan="7">Cargando…</td></tr>';
+  allEmpresas = await getAllEmpresas();
+  updateStats();
+  applyFilter();
+}
+
+function updateStats() {
+  const activos   = allEmpresas.filter(e=>e.activo!==false&&!e.nombre?.startsWith('[ELIMINADO]'));
+  const inactivos = allEmpresas.length - activos.length;
+  document.getElementById('sTotal').textContent    = allEmpresas.length;
+  document.getElementById('sActivos').textContent  = activos.length;
+  document.getElementById('sBasico').textContent   = activos.filter(e=>(e.plan||'basico')==='basico').length;
+  document.getElementById('sPro').textContent      = activos.filter(e=>e.plan==='pro').length;
+  document.getElementById('sInactivos').textContent= inactivos;
+  document.getElementById('statsRow').style.display='';
+}
+
+function applyFilter() {
+  let list = [...allEmpresas];
+  if (searchText.trim()) {
+    const q = searchText.trim().toLowerCase();
+    list = list.filter(e=>
+      (e.nombre||'').toLowerCase().includes(q) ||
+      (e.email||'').toLowerCase().includes(q)
+    );
+  }
+  if (currentFilter==='activo')   list = list.filter(e=>e.activo!==false&&!e.nombre?.startsWith('[ELIMINADO]'));
+  if (currentFilter==='inactivo') list = list.filter(e=>e.activo===false||e.nombre?.startsWith('[ELIMINADO]'));
+  if (currentFilter==='pro')      list = list.filter(e=>e.plan==='pro'&&e.activo!==false);
+  filteredList = list;
+  renderTable();
+}
+
+function renderTable() {
+  const tbody = document.getElementById('clientesBody');
+  if (!filteredList.length) {
+    tbody.innerHTML = '<tr class="loading-row"><td colspan="7">Sin resultados</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filteredList.map(e => {
+    const fecha    = e.creadoEn?.toDate?.()?.toLocaleDateString('es-UY') || '—';
+    const plan     = e.plan || 'basico';
+    const eliminado= e.nombre?.startsWith('[ELIMINADO]') || e.activo===false;
+    const nombre   = eliminado ? e.nombre?.replace('[ELIMINADO] ','') : e.nombre;
+    const planBadge= plan==='pro'
+      ? '<span class="badge badge-pro">PRO ⭐</span>'
+      : '<span class="badge badge-basico">BÁSICO</span>';
+    const statBadge= eliminado
+      ? '<span class="badge badge-inactivo">INACTIVO</span>'
+      : '<span class="badge badge-activo">ACTIVO</span>';
+
+    // Event count (stored on empresa or unknown)
+    const evCount = typeof e._evCount === 'number'
+      ? `<span style="font-family:var(--mono);font-size:12px;color:var(--accent)">${e._evCount}</span>`
+      : '<span style="color:var(--muted2);font-size:11px;font-family:var(--mono)">—</span>';
+
+    const acciones = eliminado ? `
+      <div class="row-actions">
+        <button class="row-btn del" onclick="window.adminDelete('${e.id}','${escHtml(nombre||'')}')">🗑 Eliminar definitivo</button>
+      </div>
+    ` : `
+      <div class="row-actions">
+        <button class="row-btn view" onclick="window.openDrawer('${e.id}')">👁 Ver</button>
+        <button class="row-btn" onclick="window.openEdit('${e.id}')">✏ Editar</button>
+        <button class="row-btn reset" onclick="window.openReset('${e.id}','${escHtml(nombre||'')}','${escHtml(e.email||'')}')">🔑 Reset pass</button>
+        <button class="row-btn del" onclick="window.adminDelete('${e.id}','${escHtml(nombre||'')}')">✕ Desactivar</button>
+      </div>
+    `;
+
+    return `<tr>
+      <td class="nombre"><strong>${escHtml(nombre||'—')}</strong><small>${eliminado?'<em>desactivado</em>':''}</small></td>
+      <td class="mono">${escHtml(e.email||'—')}</td>
+      <td>${planBadge}</td>
+      <td>${statBadge}</td>
+      <td class="mono">${fecha}</td>
+      <td style="text-align:center">${evCount}</td>
+      <td>${acciones}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── SEARCH & FILTER ───────────────────────────────────────────────────────
+document.getElementById('searchClients').addEventListener('input', e=>{
+  searchText = e.target.value; applyFilter();
+});
+document.querySelectorAll('.filter-btn[data-f]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.filter-btn[data-f]').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = btn.dataset.f;
+    applyFilter();
+  });
+});
+document.getElementById('btnRefresh').onclick = loadClients;
+
+// ── EDIT MODAL ────────────────────────────────────────────────────────────
+let editPlanSelected = 'basico';
+
+function setEditPlan(plan) {
+  editPlanSelected = plan;
+  document.querySelectorAll('#editBackdrop .modal-plan-opt').forEach(o=>{
+    o.className = o.dataset.plan===plan ? `modal-plan-opt sel-${plan}` : 'modal-plan-opt';
+  });
+}
+
+document.querySelectorAll('#editBackdrop .modal-plan-opt').forEach(opt=>{
+  opt.addEventListener('click',()=>setEditPlan(opt.dataset.plan));
+});
+
+window.openEdit = function(uid) {
+  const e = allEmpresas.find(x=>x.id===uid); if(!e) return;
+  editingUid = uid;
+  document.getElementById('editNombre').value = e.nombre?.replace('[ELIMINADO] ','') || '';
+  document.getElementById('editEmail').value  = e.email || '';
+  setEditPlan(e.plan || 'basico');
+  document.getElementById('editBackdrop').classList.remove('hidden');
+};
+
+document.getElementById('editClose').onclick = ()=>document.getElementById('editBackdrop').classList.add('hidden');
+document.getElementById('editBackdrop').onclick = e=>{ if(e.target.id==='editBackdrop') document.getElementById('editBackdrop').classList.add('hidden'); };
+
+document.getElementById('editSave').addEventListener('click', async ()=>{
+  if(!editingUid) return;
+  const nombre = document.getElementById('editNombre').value.trim();
+  const email  = document.getElementById('editEmail').value.trim();
+  if(!nombre||!email){ toast('Completá todos los campos','err'); return; }
+  const btn = document.getElementById('editSave');
+  btn.disabled=true; btn.textContent='Guardando…';
+  try {
+    await updateEmpresa(editingUid,{nombre,email,plan:editPlanSelected});
+    document.getElementById('editBackdrop').classList.add('hidden');
+    toast(`"${nombre}" actualizado ✓`);
+    await loadClients();
+  } catch(err){ toast(`Error: ${err.message}`,'err'); }
+  finally{ btn.disabled=false; btn.textContent='Guardar cambios'; }
+});
+
+// ── RESET PASSWORD ────────────────────────────────────────────────────────
+let resetEmailTarget = '';
+
+window.openReset = function(uid, nombre, email) {
+  resetEmailTarget = email;
+  document.getElementById('resetNombre').textContent = nombre;
+  document.getElementById('resetEmail').textContent  = email;
+  document.getElementById('resetBackdrop').classList.remove('hidden');
+};
+
+document.getElementById('resetClose').onclick = ()=>document.getElementById('resetBackdrop').classList.add('hidden');
+document.getElementById('resetBackdrop').onclick = e=>{ if(e.target.id==='resetBackdrop') document.getElementById('resetBackdrop').classList.add('hidden'); };
+
+document.getElementById('resetSend').addEventListener('click', async ()=>{
+  if(!resetEmailTarget) return;
+  const btn = document.getElementById('resetSend');
+  btn.disabled=true; btn.textContent='Enviando…';
+  try {
+    await enviarResetPassword(resetEmailTarget);
+    document.getElementById('resetBackdrop').classList.add('hidden');
+    toast(`Correo enviado a ${resetEmailTarget} ✓`,'info');
+  } catch(err){ toast(`Error: ${err.message}`,'err'); }
+  finally{ btn.disabled=false; btn.textContent='📧 Enviar correo de restablecimiento'; }
+});
+
+// ── DELETE / DEACTIVATE ───────────────────────────────────────────────────
+window.adminDelete = async function(uid, nombre) {
+  const e = allEmpresas.find(x=>x.id===uid);
+  const eliminado = e?.activo===false || e?.nombre?.startsWith('[ELIMINADO]');
+
+  if (eliminado) {
+    const ok = await showConfirm({title:'¿Eliminar registro?',msg:`Se borrará el registro de "${nombre}" de la lista de clientes. Los eventos ya expiraron automáticamente.`,okLabel:'Sí, eliminar'});
+    if(!ok) return;
+    // Soft delete definitivo — marcamos con timestamp
+    await updateEmpresa(uid,{nombre:`[ELIMINADO] ${nombre}`,activo:false,eliminadoEn:Date.now()});
+    toast(`Registro de "${nombre}" eliminado`,'warn');
+  } else {
+    const ok = await showConfirm({title:'¿Desactivar cliente?',msg:`"${nombre}" perderá acceso al sistema. Sus datos se conservan y podés reactivarlo editándolo.`,okLabel:'Sí, desactivar'});
+    if(!ok) return;
+    await updateEmpresa(uid,{activo:false,nombre:`[ELIMINADO] ${nombre}`});
+    toast(`"${nombre}" desactivado`,'warn');
+  }
+  await loadClients();
+};
+
+// ── ACTIVITY DRAWER ───────────────────────────────────────────────────────
+window.openDrawer = async function(uid) {
+  drawerUid = uid;
+  drawerTab = 'eventos';
+  const e = allEmpresas.find(x=>x.id===uid);
+  document.getElementById('drawerNombre').textContent = e?.nombre || '—';
+  document.getElementById('drawerMeta').textContent   = `${e?.email||'—'} · Plan ${(e?.plan||'basico').toUpperCase()}`;
+
+  // Set active tab
+  document.querySelectorAll('.dtab').forEach(t=>t.classList.toggle('active',t.dataset.tab==='eventos'));
+
+  // Show drawer
+  document.getElementById('drawerBack').classList.add('show');
+  document.getElementById('actDrawer').classList.add('open');
+
+  // Load eventos on demand
+  await loadDrawerTab('eventos', uid, e);
+};
+
+async function loadDrawerTab(tab, uid, empresa) {
+  const body = document.getElementById('drawerBody');
+  body.innerHTML = `<div class="drawer-loading"><div class="drawer-spinner"></div><p>Cargando ${tab}…</p></div>`;
+
+  if (tab === 'eventos') {
+    try {
+      const eventos = await getEventos(uid);
+      if (!eventos.length) {
+        body.innerHTML = `<div class="empty-state"><span class="ei">📭</span><p>Sin eventos en las últimas 48hs</p></div>`;
+        return;
+      }
+      body.innerHTML = eventos.map(ev => {
+        const sev = ev.severidad||'low';
+        const pill = `<span class="sev-pill-sm ${sev}">${sev==='high'?'ALTO':sev==='medium'?'MEDIO':'BAJO'}</span>`;
+        const thumb = ev.snapshot
+          ? `<img class="ev-thumb" src="${ev.snapshot}" alt="snap" loading="lazy" onclick="window.openSnap('${ev.snapshot}')" style="cursor:zoom-in">`
+          : `<div class="ev-thumb-ph">📷</div>`;
+        return `<div class="ev-item sev-${sev}">
+          ${thumb}
+          <div>
+            <div class="ev-tipo">${escHtml(ev.tipo||'Evento')}${pill}</div>
+            <div class="ev-meta">CAM ${(ev.camaraIdx??0)+1} · ${timeAgo(ev.tsMs)} atrás · Riesgo: ${typeof ev.risk==='number'?ev.risk.toFixed(2):typeof ev.score==='number'?ev.score.toFixed(2):'—'}</div>
+            <div class="ev-meta" style="margin-top:2px">${new Date(ev.tsMs).toLocaleString('es-UY',{hour12:false})}</div>
+          </div>
+        </div>`;
+      }).join('');
+    } catch(err) {
+      body.innerHTML = `<div class="empty-state"><span class="ei">⚠️</span><p>Error al cargar: ${err.message}</p></div>`;
+    }
+
+  } else if (tab === 'info') {
+    const e = empresa || allEmpresas.find(x=>x.id===uid);
+    const fecha = e?.creadoEn?.toDate?.()?.toLocaleString('es-UY',{hour12:false}) || '—';
+    const plan  = e?.plan || 'basico';
+    body.innerHTML = `
+      <div class="info-row"><span class="info-k">Empresa</span><span class="info-v">${escHtml(e?.nombre||'—')}</span></div>
+      <div class="info-row"><span class="info-k">Email</span><span class="info-v">${escHtml(e?.email||'—')}</span></div>
+      <div class="info-row"><span class="info-k">Plan</span><span class="info-v ${plan==='pro'?'warn':'accent'}">${plan.toUpperCase()}</span></div>
+      <div class="info-row"><span class="info-k">Estado</span><span class="info-v ${e?.activo===false?'':'green'}">${e?.activo===false?'INACTIVO':'ACTIVO'}</span></div>
+      <div class="info-row"><span class="info-k">Cámaras</span><span class="info-v">${plan==='pro'?'3':'1'}</span></div>
+      <div class="info-row"><span class="info-k">Multi-cam</span><span class="info-v">${plan==='pro'?'✓ Sí':'✗ No'}</span></div>
+      <div class="info-row"><span class="info-k">Historial</span><span class="info-v accent">48hs</span></div>
+      <div class="info-row"><span class="info-k">Registrado</span><span class="info-v">${fecha}</span></div>
+      <div class="info-row"><span class="info-k">UID</span><span class="info-v" style="font-size:10px;word-break:break-all">${escHtml(uid)}</span></div>
+    `;
+  }
+}
+
+// Drawer tabs
+document.querySelectorAll('.dtab').forEach(tab=>{
+  tab.addEventListener('click', async ()=>{
+    if(!drawerUid) return;
+    drawerTab = tab.dataset.tab;
+    document.querySelectorAll('.dtab').forEach(t=>t.classList.toggle('active',t===tab));
+    const e = allEmpresas.find(x=>x.id===drawerUid);
+    await loadDrawerTab(drawerTab, drawerUid, e);
+  });
+});
+
+function closeDrawer() {
+  document.getElementById('drawerBack').classList.remove('show');
+  document.getElementById('actDrawer').classList.remove('open');
+  drawerUid = null;
+}
+document.getElementById('drawerClose').onclick = closeDrawer;
+document.getElementById('drawerBack').onclick  = closeDrawer;
+
+// ── SNAPSHOT LIGHTBOX ─────────────────────────────────────────────────────
+window.openSnap = function(src) {
+  document.getElementById('snapImg').src = src;
+  document.getElementById('snapLightbox').classList.add('show');
+};
+document.getElementById('snapClose').onclick = ()=>{
+  document.getElementById('snapLightbox').classList.remove('show');
+  document.getElementById('snapImg').src = '';
+};
+document.getElementById('snapLightbox').onclick = e=>{
+  if(e.target.id==='snapLightbox'||e.target.id==='snapImg') {
+    document.getElementById('snapLightbox').classList.remove('show');
+    document.getElementById('snapImg').src='';
+  }
+};
+
+// ── KEYBOARD ──────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape'){
+    closeDrawer();
+    document.getElementById('editBackdrop').classList.add('hidden');
+    document.getElementById('resetBackdrop').classList.add('hidden');
+    document.getElementById('snapLightbox').classList.remove('show');
+  }
+});
+
+// ── LOGOUT ────────────────────────────────────────────────────────────────
+document.getElementById('btnLogout').onclick = logout;
+</script>
+</body>
+</html>

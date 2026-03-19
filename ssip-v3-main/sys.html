@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Veexion SSIP v7.0 — Ficha Técnica</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --void:#04080c;--deep:#070d12;--panel:#0a1018;--surface:#0e1620;
+  --border:#1a2a38;--border2:#243344;
+  --cyan:#00e5ff;--red:#ff1744;--amber:#ffab00;--green:#00e676;
+  --purple:#d500f9;--blue:#2979ff;--orange:#ff6d00;
+  --text:#8fb3c8;--text2:#4a6878;--text3:#253545;--white:#e8f4f8;
+  --glow-c:0 0 20px rgba(0,229,255,0.3);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--void);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:15px;line-height:1.5;overflow-x:hidden;}
+body::after{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px);}
+#bg-canvas{position:fixed;inset:0;z-index:0;opacity:0.4;}
+.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 28px 100px;}
+
+/* NAV TABS */
+.nav-tabs{
+  position:sticky;top:0;z-index:100;
+  background:rgba(4,8,12,0.95);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  display:flex;gap:0;padding:0 28px;
+  margin:0 -28px 0;
+}
+.nav-tab{
+  font-family:'JetBrains Mono',monospace;font-size:10px;
+  text-transform:uppercase;letter-spacing:.1em;
+  color:var(--text2);padding:14px 20px;cursor:pointer;
+  border-bottom:2px solid transparent;
+  transition:color .2s,border-color .2s;
+  white-space:nowrap;
+}
+.nav-tab:hover{color:var(--text);}
+.nav-tab.active{color:var(--cyan);border-bottom-color:var(--cyan);}
+
+/* HERO */
+.hero{padding:60px 0 0;margin-bottom:48px;}
+.hero-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;}
+.classification{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.15em;color:var(--red);border:1px solid rgba(255,23,68,0.3);padding:4px 12px;border-radius:2px;background:rgba(255,23,68,0.06);animation:blink-cls 3s steps(1) infinite;}
+@keyframes blink-cls{0%,90%{opacity:1}95%{opacity:.3}100%{opacity:1}}
+.ts-block{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);text-align:right;line-height:1.9;}
+.hero-title{font-family:'Bebas Neue',cursive;font-size:clamp(60px,9vw,108px);line-height:.9;letter-spacing:.04em;color:var(--white);}
+.hero-title .acc{color:transparent;-webkit-text-stroke:1px var(--cyan);text-shadow:var(--glow-c);}
+.hero-title .ver{font-size:.38em;vertical-align:super;color:var(--cyan);-webkit-text-stroke:0;}
+.hero-sub{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.1em;color:var(--text2);text-transform:uppercase;margin-top:10px;}
+.hero-kpis{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-top:28px;border-radius:4px;overflow:hidden;}
+.kpi{background:var(--panel);padding:16px 14px;display:flex;flex-direction:column;gap:3px;transition:background .2s;}
+.kpi:hover{background:var(--surface);}
+.kpi-val{font-family:'Bebas Neue',cursive;font-size:34px;line-height:1;color:var(--cyan);text-shadow:var(--glow-c);}
+.kpi-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--text2);}
+.kpi-new{font-family:'JetBrains Mono',monospace;font-size:7px;color:var(--green);letter-spacing:.06em;}
+
+/* SECTIONS */
+.section{margin-top:64px;scroll-margin-top:52px;}
+.sec-head{display:flex;align-items:center;gap:14px;margin-bottom:22px;}
+.sec-num{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:.1em;flex-shrink:0;}
+.sec-title{font-family:'Bebas Neue',cursive;font-size:26px;letter-spacing:.06em;color:var(--white);}
+.sec-line{flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);}
+.sec-tag{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:.1em;flex-shrink:0;}
+
+/* PANEL */
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:4px;position:relative;overflow:hidden;}
+.ph{position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:.25;}
+.pi{padding:24px 28px;}
+
+/* TAGS */
+.tag{display:inline-flex;align-items:center;gap:4px;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;padding:3px 8px;border-radius:2px;}
+.tc{background:rgba(0,229,255,.08);border:1px solid rgba(0,229,255,.25);color:var(--cyan);}
+.tr{background:rgba(255,23,68,.08);border:1px solid rgba(255,23,68,.25);color:var(--red);}
+.ta{background:rgba(255,171,0,.08);border:1px solid rgba(255,171,0,.25);color:var(--amber);}
+.tg{background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.25);color:var(--green);}
+.tp{background:rgba(213,0,249,.08);border:1px solid rgba(213,0,249,.25);color:var(--purple);}
+.to{background:rgba(255,109,0,.08);border:1px solid rgba(255,109,0,.25);color:var(--orange);}
+.tnew{background:rgba(0,230,118,.12);border:1px solid rgba(0,230,118,.4);color:var(--green);font-size:8px;padding:2px 6px;}
+
+/* ─── SECCIÓN USUARIOS NO TÉCNICOS ─── */
+.plain-hero{
+  background:linear-gradient(135deg,rgba(0,229,255,0.04),rgba(213,0,249,0.04));
+  border:1px solid var(--border2);border-radius:6px;padding:36px 36px 32px;
+  position:relative;overflow:hidden;
+}
+.plain-hero::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--cyan),var(--purple));
+}
+.plain-title{font-family:'Bebas Neue',cursive;font-size:32px;letter-spacing:.04em;color:var(--white);margin-bottom:8px;}
+.plain-lead{font-size:16px;color:var(--text);line-height:1.7;max-width:760px;margin-bottom:28px;}
+.plain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.plain-card{
+  background:var(--panel);border:1px solid var(--border);border-radius:4px;
+  padding:20px 18px;position:relative;overflow:hidden;
+}
+.plain-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;}
+.plain-card.blue::before{background:var(--cyan);}
+.plain-card.purple::before{background:var(--purple);}
+.plain-card.red::before{background:var(--red);}
+.plain-card.green::before{background:var(--green);}
+.plain-card.amber::before{background:var(--amber);}
+.plain-card.orange::before{background:var(--orange);}
+.pc-icon{font-size:26px;margin-bottom:10px;}
+.pc-title{font-family:'Bebas Neue',cursive;font-size:17px;letter-spacing:.04em;color:var(--white);margin-bottom:6px;}
+.pc-body{font-size:13px;color:var(--text2);line-height:1.65;}
+.pc-example{
+  margin-top:10px;font-size:12px;padding:8px 10px;
+  background:rgba(255,255,255,.03);border-left:2px solid rgba(255,255,255,.1);
+  border-radius:2px;color:var(--text2);font-style:italic;
+}
+
+/* ANALOGY BOX */
+.analogy{
+  background:var(--deep);border:1px solid var(--border2);border-radius:4px;
+  padding:22px 24px;margin:20px 0;
+  display:flex;gap:18px;align-items:flex-start;
+}
+.analogy-icon{font-size:28px;flex-shrink:0;margin-top:2px;}
+.analogy-body{}
+.analogy-title{font-family:'Bebas Neue',cursive;font-size:17px;letter-spacing:.04em;color:var(--white);margin-bottom:6px;}
+.analogy-text{font-size:13px;color:var(--text2);line-height:1.65;}
+
+/* CÓMO FUNCIONA — pasos */
+.how-steps{display:flex;flex-direction:column;gap:0;}
+.how-step{display:flex;gap:20px;position:relative;}
+.how-step::before{content:'';position:absolute;left:19px;top:42px;width:1px;bottom:0;background:linear-gradient(180deg,var(--border),transparent);}
+.how-step:last-child::before{display:none;}
+.how-dot{width:40px;height:40px;flex-shrink:0;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-size:14px;z-index:1;}
+.how-body{flex:1;padding-bottom:28px;}
+.how-title{font-family:'Bebas Neue',cursive;font-size:17px;letter-spacing:.04em;color:var(--white);padding-top:8px;margin-bottom:5px;}
+.how-desc{font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:8px;}
+
+/* FLOW */
+.flow-row{display:flex;align-items:flex-start;gap:0;}
+.flow-arrow{display:flex;align-items:center;padding:0 6px;flex-shrink:0;margin-top:26px;}
+.flow-node{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1;}
+.flow-box{width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:4px;padding:12px 10px;display:flex;flex-direction:column;gap:7px;transition:border-color .2s,transform .2s;cursor:default;}
+.flow-box:hover{transform:translateY(-2px);}
+.flow-phase{font-family:'JetBrains Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);}
+.flow-name{font-family:'Bebas Neue',cursive;font-size:15px;letter-spacing:.06em;color:var(--white);line-height:1;}
+.flow-codes{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px;}
+
+/* SCORE BARS */
+.srow{display:grid;grid-template-columns:150px 1fr 52px;gap:12px;align-items:center;}
+.srow-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);text-align:right;}
+.sbar-bg{height:5px;background:rgba(255,255,255,.04);border-radius:1px;overflow:hidden;}
+.sbar-fill{height:100%;border-radius:1px;transition:width 1.4s cubic-bezier(.22,1,.36,1);}
+.spts{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);}
+
+/* TABLE */
+.beh-table{width:100%;border-collapse:collapse;}
+.beh-table th{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);position:sticky;top:52px;background:var(--panel);}
+.beh-table td{padding:8px 14px;font-size:13px;border-bottom:1px solid rgba(26,42,56,.5);vertical-align:middle;color:var(--text);}
+.beh-table tr:last-child td{border-bottom:none;}
+.beh-table tr:hover td{background:rgba(0,229,255,.025);}
+.bcode{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--white);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);padding:2px 8px;border-radius:2px;}
+.pts{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--amber);}
+
+/* MODEL CARDS */
+.model-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.mc{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:22px 24px;display:flex;flex-direction:column;gap:14px;position:relative;overflow:hidden;transition:border-color .2s;}
+.mc:hover{border-color:var(--border2);}
+.mc-top{display:flex;justify-content:space-between;align-items:flex-start;}
+.mc-name{font-family:'Bebas Neue',cursive;font-size:18px;letter-spacing:.06em;color:var(--white);}
+.mc-file{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);margin-top:3px;}
+.mc-sg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.ms{display:flex;flex-direction:column;gap:2px;}
+.ms-lbl{font-family:'JetBrains Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);}
+.ms-val{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--white);font-weight:500;}
+.mc-desc{font-size:12px;color:var(--text2);line-height:1.6;}
+.mc-stripe{position:absolute;bottom:0;left:0;right:0;height:2px;}
+
+/* IMPROVEMENTS */
+.imp-list{display:flex;flex-direction:column;gap:8px;}
+.imp{display:flex;gap:16px;align-items:flex-start;background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:16px 18px;transition:border-color .2s;}
+.imp:hover{border-color:var(--border2);}
+.imp.new-v7{border-color:rgba(0,230,118,.2);}
+.imp-tag{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:var(--cyan);background:rgba(0,229,255,.07);border:1px solid rgba(0,229,255,.2);border-radius:2px;padding:4px 10px;white-space:nowrap;flex-shrink:0;letter-spacing:.06em;}
+.imp-tag.green{color:var(--green);background:rgba(0,230,118,.07);border-color:rgba(0,230,118,.2);}
+.imp-title{font-family:'Rajdhani',sans-serif;font-size:15px;font-weight:700;color:var(--white);margin-bottom:3px;}
+.imp-desc{font-size:12px;color:var(--text2);line-height:1.6;}
+.imp-before-after{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+.iba{font-family:'JetBrains Mono',monospace;font-size:10px;padding:7px 10px;border-radius:2px;}
+.iba.before{background:rgba(255,23,68,.06);border:1px solid rgba(255,23,68,.15);color:#ff6b6b;}
+.iba.after{background:rgba(0,230,118,.06);border:1px solid rgba(0,230,118,.15);color:#6bffb8;}
+.iba-lbl{font-size:8px;opacity:.6;margin-bottom:2px;display:block;}
+
+/* PROFILES */
+.gauge-row{display:grid;grid-template-columns:160px 1fr 42px;align-items:center;gap:16px;padding:9px 0;border-bottom:1px solid rgba(26,42,56,.5);}
+.gauge-row:last-child{border-bottom:none;}
+.gauge-lbl{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);}
+.gauge-bg{height:6px;background:rgba(255,255,255,.04);border-radius:1px;overflow:hidden;}
+.gauge-fill{height:100%;border-radius:1px;transition:width 1.4s cubic-bezier(.22,1,.36,1);}
+.gauge-num{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--amber);text-align:right;}
+
+/* FAMILIES */
+.fam-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+.fc{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:16px 14px;display:flex;flex-direction:column;gap:7px;transition:border-color .2s,transform .2s;}
+.fc:hover{border-color:var(--border2);transform:translateY(-2px);}
+.fc-icon{font-size:22px;}
+.fc-key{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;}
+.fc-label{font-family:'Rajdhani',sans-serif;font-size:13px;font-weight:600;color:var(--white);}
+.fc-conf{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);}
+.fc-ids{font-size:11px;color:var(--text2);line-height:1.5;}
+.fc-bar{height:2px;border-radius:1px;margin-top:4px;}
+
+/* PARAMS */
+.param-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.pb{background:var(--panel);border:1px solid var(--border);border-radius:4px;padding:20px 24px;}
+.pb-title{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.pr{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(26,42,56,.4);}
+.pr:last-child{border-bottom:none;}
+.pr-key{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);}
+.pr-val{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--white);font-weight:500;}
+.pr-val.new{color:var(--green);}
+.pr-val.changed{color:var(--amber);}
+
+/* FOOTER */
+.footer{margin-top:80px;padding-top:24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;}
+.footer-brand{font-family:'Bebas Neue',cursive;font-size:20px;letter-spacing:.06em;color:var(--white);}
+.footer-brand span{color:var(--cyan);text-shadow:var(--glow-c);}
+.footer-info{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text3);line-height:1.8;text-align:right;}
+
+/* ANIM */
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.fu{animation:fadeUp .5s ease both;}
+@keyframes pulse-border{0%,100%{border-color:rgba(0,229,255,.2)}50%{border-color:rgba(0,229,255,.5)}}
+@keyframes glitch{0%,95%{clip-path:none;transform:none}96%{clip-path:polygon(0 20%,100% 20%,100% 30%,0 30%);transform:translateX(-2px)}97%{clip-path:polygon(0 60%,100% 60%,100% 70%,0 70%);transform:translateX(2px)}98%{clip-path:none;transform:none}}
+
+/* HIGHLIGHT NEW */
+.v7-highlight{position:relative;}
+.v7-highlight::after{content:'v7.0';position:absolute;top:-8px;right:-8px;font-family:'JetBrains Mono',monospace;font-size:7px;background:var(--green);color:#000;padding:1px 5px;border-radius:2px;font-weight:700;}
+
+@media(max-width:820px){
+  .hero-kpis{grid-template-columns:repeat(4,1fr)}
+  .model-grid,.param-grid,.plain-grid{grid-template-columns:1fr}
+  .fam-grid{grid-template-columns:repeat(2,1fr)}
+  .flow-row{flex-wrap:wrap}
+  .nav-tabs{overflow-x:auto}
+}
+</style>
+</head>
+<body>
+<canvas id="bg-canvas"></canvas>
+<div class="wrap">
+
+<!-- ══════════ NAV ══════════ -->
+<nav class="nav-tabs" id="navTabs">
+  <div class="nav-tab active" data-sec="sec-plain">Para todos</div>
+  <div class="nav-tab" data-sec="sec-flow">Flujo</div>
+  <div class="nav-tab" data-sec="sec-pipe">Pipeline</div>
+  <div class="nav-tab" data-sec="sec-score">Score</div>
+  <div class="nav-tab" data-sec="sec-catalog">Comportamientos</div>
+  <div class="nav-tab" data-sec="sec-models">Modelos</div>
+  <div class="nav-tab" data-sec="sec-profiles">Perfiles</div>
+  <div class="nav-tab" data-sec="sec-families">Objetos</div>
+  <div class="nav-tab" data-sec="sec-mejoras">Mejoras</div>
+  <div class="nav-tab" data-sec="sec-params">Parámetros</div>
+</nav>
+
+<!-- ══════════ HERO ══════════ -->
+<div class="hero fu">
+  <div class="hero-top">
+    <div class="classification">⬛ CLASIFICADO — INTERNO · USO EXCLUSIVO  Veexion SSIP</div>
+    <div class="ts-block" id="ts"></div>
+  </div>
+  <h1 class="hero-title" style="animation:glitch 6s steps(1) infinite">
+    Veexion<span class="acc"> SYS</span><sup class="ver">v7.0</sup>
+  </h1>
+  <div class="hero-sub">// Sistema de Supervisión Inteligente Preventiva — Motor de Detección de Hurto en Tiempo Real</div>
+  <div class="hero-kpis">
+    <div class="kpi"><div class="kpi-val">29</div><div class="kpi-lbl">Comportamientos</div><div class="kpi-new">+4 v7.0</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--green)">1200+</div><div class="kpi-lbl">Clases YOLOE</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--purple)">21</div><div class="kpi-lbl">Landmarks / mano</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--amber)">12</div><div class="kpi-lbl">Perfiles local</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--red)">3×</div><div class="kpi-lbl">Mult. vigilancia</div><div class="kpi-new">nuevo v7.0</div></div>
+    <div class="kpi"><div class="kpi-val">90</div><div class="kpi-lbl">Frames historia</div></div>
+    <div class="kpi"><div class="kpi-val" style="color:var(--green)">EMA</div><div class="kpi-lbl">KP Smoothing</div><div class="kpi-new">nuevo v7.0</div></div>
+  </div>
+</div>
+
+<!-- ══════════ SECCIÓN 0 — PARA TODOS ══════════ -->
+<div class="section" id="sec-plain">
+  <div class="sec-head">
+    <span class="sec-num">// 00</span>
+    <h2 class="sec-title">¿Cómo funciona? — Para todos</h2>
+    <div class="sec-line"></div>
+    <span class="sec-tag">Sin tecnicismos</span>
+  </div>
+
+  <div class="plain-hero">
+    <div class="plain-title">La idea en una frase</div>
+    <div class="plain-lead">
+     Veexion es un sistema de videovigilancia inteligente que <strong style="color:var(--white)">observa cómo se mueven las personas</strong> dentro de un local, aprende a distinguir el comportamiento de un cliente normal del de alguien que está robando, y lanza una alerta antes de que el producto salga del local. No graba caras. No identifica personas. Solo analiza movimientos y posturas en tiempo real.
+    </div>
+
+    <div class="analogy">
+      <div class="analogy-icon">👮</div>
+      <div class="analogy-body">
+        <div class="analogy-title">La analogía del guardia experto</div>
+        <div class="analogy-text">Pensá en un guardia de seguridad con 20 años de experiencia. Con solo mirar a alguien, sabe cuándo algo no está bien: el cliente que mira demasiado los lados antes de tomar algo, el que dobla el brazo de cierta forma, el que un amigo lo tapa mientras agarra. Veexion hace exactamente eso, pero procesando 15 a 30 imágenes por segundo, las 24 horas, sin cansarse, sin distraerse, sin perder el foco. No adivina: aplica reglas precisas basadas en cientos de patrones de comportamiento real.</div>
+      </div>
+    </div>
+
+    <div class="plain-grid">
+      <div class="plain-card blue">
+        <div class="pc-icon">📐</div>
+        <div class="pc-title">Puntos del cuerpo</div>
+        <div class="pc-body">La IA ubica 17 puntos clave en el cuerpo de cada persona: nariz, hombros, codos, muñecas, caderas, rodillas y tobillos. Cada frame, sabe exactamente dónde está cada articulación.</div>
+        <div class="pc-example">→ Si detecta que la muñeca derecha está muy cerca de la cadera por 10 frames seguidos, marca: "mano en bolsillo".</div>
+      </div>
+      <div class="plain-card purple">
+        <div class="pc-icon">🧠</div>
+        <div class="pc-title">Reglas de comportamiento</div>
+        <div class="pc-body">No usa inteligencia artificial entrenada con ejemplos de robos (como hace Netflix con recomendaciones). Usa reglas escritas a mano por humanos: "si pasa X y luego Y en menos de 30 segundos, es sospechoso". Esto lo hace predecible, explicable y ajustable.</div>
+        <div class="pc-example">→ Regla ejemplo: si una persona escanea con la cabeza, luego mete la mano en una zona de alerta, y después su muñeca desaparece cerca de la ropa → ALERTA.</div>
+      </div>
+      <div class="plain-card red">
+        <div class="pc-icon">🎯</div>
+        <div class="pc-title">Sistema de puntos</div>
+        <div class="pc-body">Cada comportamiento sospechoso suma puntos. Cuando el total supera el umbral del perfil del local, dispara la alerta. Comportamientos aislados no alcanzan solos: varios patrones juntos sí.</div>
+        <div class="pc-example">→ Mirar los lados: +9 pts. Tomar objeto: +38 pts. Meter mano en manga: +33 pts. Total: 80 pts → ALERTA (umbral joyería: 50 pts).</div>
+      </div>
+      <div class="plain-card green">
+        <div class="pc-icon">🔍</div>
+        <div class="pc-title">Estado de Vigilancia</div>
+        <div class="pc-body">Nuevo en v7.0. Cuando la IA detecta que alguien escanea el entorno con la cabeza (como chequeando si hay cámaras o personal), activa un "estado de alerta elevada" por 8 segundos. Cualquier otro gesto sospechoso en ese período vale el triple de puntos.</div>
+        <div class="pc-example">→ Escaneo detectado → alta vigilancia activada → mano en bolsillo siguiente: en vez de sumar 20 pts suma 60 pts.</div>
+      </div>
+      <div class="plain-card amber">
+        <div class="pc-icon">📦</div>
+        <div class="pc-title">Seguimiento de objetos</div>
+        <div class="pc-body">El sistema también rastrea objetos detectables: botellas, cajas, bolsos, electrónicos, alimentos, ropa. Si un objeto estaba visible, una persona lo tocó, y luego desapareció de cámara → señal muy fuerte de hurto.</div>
+        <div class="pc-example">→ Chocolate visible en góndola → mano encima por 400ms → chocolate desaparece → score +38 pts inmediato.</div>
+      </div>
+      <div class="plain-card orange">
+        <div class="pc-icon">👥</div>
+        <div class="pc-title">Trabajo en grupo</div>
+        <div class="pc-body">El sistema detecta robos coordinados: el que distrae al cajero mientras otro roba, el que tapa la cámara con el cuerpo, dos personas que hacen el mismo movimiento sospechoso al mismo tiempo, tres personas formando una V para bloquear el ángulo de visión.</div>
+        <div class="pc-example">→ Persona A en mostrador distrayendo al cajero + Persona B con postContacto activo → ALERTA "Cómplice distractor".</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cómo funciona paso a paso -->
+  <div style="margin-top:28px;">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:18px;">// Paso a paso — lo que pasa en cada segundo</div>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="how-dot" style="background:rgba(0,229,255,.08);border:1px solid var(--cyan);color:var(--cyan);">01</div>
+        <div class="how-body">
+          <div class="how-title">La cámara graba y el motor recibe imágenes</div>
+          <div class="how-desc">El video de la cámara IP se procesa en el navegador, sin enviar nada a ningún servidor externo. Cada imagen pasa por dos modelos de IA simultáneamente: uno detecta personas y dibuja el esqueleto de 17 puntos, el otro detecta objetos en el ambiente (productos, bolsos, cajas).</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;"><span class="tag tc">640×640px input</span><span class="tag tg">15-30 fps</span><span class="tag tp">100% local</span></div>
+        </div>
+      </div>
+      <div class="how-step">
+        <div class="how-dot" style="background:rgba(255,171,0,.08);border:1px solid var(--amber);color:var(--amber);">02</div>
+        <div class="how-body">
+          <div class="how-title">Se suavizan los puntos del cuerpo</div>
+          <div class="how-desc">Nuevo en v7.0: antes de analizar nada, el sistema promedia los últimos 3 frames de cada punto del cuerpo. Si una muñeca desaparece momentáneamente (por ejemplo, la tapa un producto), la interpola durante 4 frames. Esto elimina el temblor de cámaras baratas y reduce los falsos negativos.</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;"><span class="tag tg">EMA 3 frames</span><span class="tag tg">Interpolación 4fr</span><span class="tag tg">Nuevo v7.0</span></div>
+        </div>
+      </div>
+      <div class="how-step">
+        <div class="how-dot" style="background:rgba(255,23,68,.08);border:1px solid var(--red);color:var(--red);">03</div>
+        <div class="how-body">
+          <div class="how-title">Se verifican 29 reglas de comportamiento</div>
+          <div class="how-desc">Por cada persona detectada, el sistema verifica en paralelo las 29 reglas definidas. Cada regla tiene condiciones muy específicas: coordenadas, distancias, tiempos, secuencias. No es "parece sospechoso" — es "la muñeca izquierda estuvo a menos de 22% de la cadera izquierda por 10 frames consecutivos". Matemática pura.</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;"><span class="tag tr">29 reglas</span><span class="tag ta">Heurísticas de posición</span><span class="tag tc">Temporales y espaciales</span></div>
+        </div>
+      </div>
+      <div class="how-step">
+        <div class="how-dot" style="background:rgba(213,0,249,.08);border:1px solid var(--purple);color:var(--purple);">04</div>
+        <div class="how-body">
+          <div class="how-title">Se acumula el score de sospecha</div>
+          <div class="how-desc">Cada regla que se cumple suma puntos al score de esa persona. Los puntos tienen diferentes pesos: un escaneo suma 9, una toma de objeto suma 38, un traspaso suma 48. El score también baja si la persona no hace nada sospechoso por varios frames. Si se detectó escaneo previo, los siguientes comportamientos multiplican por 3.</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;"><span class="tag ta">Score 0–100</span><span class="tag tr">Decay automático</span><span class="tag tg">×3 con vigilancia</span></div>
+        </div>
+      </div>
+      <div class="how-step">
+        <div class="how-dot" style="background:rgba(0,230,118,.08);border:1px solid var(--green);color:var(--green);animation:pulse-border 2s ease infinite;">05</div>
+        <div class="how-body">
+          <div class="how-title">Alerta cuando se cruza el umbral del local</div>
+          <div class="how-desc">Cada tipo de local tiene un umbral distinto: joyería es 50 puntos (muy sensible), supermercado es 70 puntos. Cuando el score de una persona cruza ese umbral, el sistema dispara la alerta con el detalle de qué comportamientos la causaron, guarda el snapshot del momento, y resetea el score al 15% para evitar re-disparos inmediatos.</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;"><span class="tag tr">ROBO CONFIRMADO</span><span class="tag ta">Threshold por perfil</span><span class="tag tc">Snapshot automático</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Qué NO hace -->
+  <div style="margin-top:28px;background:rgba(0,229,255,0.03);border:1px solid var(--border2);border-radius:4px;padding:22px 24px;">
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--cyan);text-transform:uppercase;letter-spacing:.12em;margin-bottom:14px;">// Lo que el sistema NO hace</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+      <div>
+        <div style="font-family:'Bebas Neue',cursive;font-size:15px;letter-spacing:.04em;color:var(--white);margin-bottom:4px;">❌ No reconoce caras</div>
+        <div style="font-size:12px;color:var(--text2);">No usa reconocimiento facial ni biométrico. Solo analiza posición de articulaciones del cuerpo, no rasgos personales.</div>
+      </div>
+      <div>
+        <div style="font-family:'Bebas Neue',cursive;font-size:15px;letter-spacing:.04em;color:var(--white);margin-bottom:4px;">❌ No envía video a la nube</div>
+        <div style="font-size:12px;color:var(--text2);">Todo el procesamiento ocurre en el navegador del dispositivo local. No hay upload de video a ningún servidor externo.</div>
+      </div>
+      <div>
+        <div style="font-family:'Bebas Neue',cursive;font-size:15px;letter-spacing:.04em;color:var(--white);margin-bottom:4px;">❌ No acusa automáticamente</div>
+        <div style="font-size:12px;color:var(--text2);">El sistema genera alertas para que un humano tome la decisión final. Es una herramienta de apoyo, no un juez automático.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ 01 — FLUJO ══════════ -->
+<div class="section" id="sec-flow">
+  <div class="sec-head">
+    <span class="sec-num">// 01</span>
+    <h2 class="sec-title">Flujo de Detección</h2>
+    <div class="sec-line"></div>
+    <span class="sec-tag">Frame → Alerta</span>
+  </div>
+  <div class="panel">
+    <div class="ph"></div>
+    <div class="pi">
+      <div class="flow-row">
+        <div class="flow-node">
+          <div class="flow-box" style="border-top:2px solid var(--cyan)">
+            <div class="flow-phase">Fase 1</div>
+            <div class="flow-name">Entrada</div>
+            <div style="font-size:11px;color:var(--text2)">Primera aparición en frame</div>
+            <div class="flow-codes"><span class="tag tc">T</span><span class="tag ta">H</span></div>
+          </div>
+        </div>
+        <div class="flow-arrow"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7L18 7M14 3L22 7L14 11" stroke="var(--cyan)" stroke-width="1.5" fill="none"/></svg></div>
+        <div class="flow-node">
+          <div class="flow-box" style="border-top:2px solid var(--amber)">
+            <div class="flow-phase">Fase 2</div>
+            <div class="flow-name">Zona + Objeto</div>
+            <div style="font-size:11px;color:var(--text2)">Contacto confirmado</div>
+            <div class="flow-codes"><span class="tag tc">Z1</span><span class="tag tr">Z2</span><span class="tag ta">O1</span></div>
+          </div>
+        </div>
+        <div class="flow-arrow"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7L18 7M14 3L22 7L14 11" stroke="var(--amber)" stroke-width="1.5" fill="none"/></svg></div>
+        <div class="flow-node">
+          <div class="flow-box" style="border-top:2px solid var(--red)">
+            <div class="flow-phase">Fase 3</div>
+            <div class="flow-name">Toma</div>
+            <div style="font-size:11px;color:var(--text2)">postContact 5s activo</div>
+            <div class="flow-codes"><span class="tag tr">O2</span><span class="tag tr">G</span><span class="tag tr">F</span></div>
+          </div>
+        </div>
+        <div class="flow-arrow"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7L18 7M14 3L22 7L14 11" stroke="var(--red)" stroke-width="1.5" fill="none"/></svg></div>
+        <div class="flow-node">
+          <div class="flow-box" style="border-top:2px solid var(--purple)">
+            <div class="flow-phase">Fase 4</div>
+            <div class="flow-name">Ocultamiento</div>
+            <div style="font-size:11px;color:var(--text2)">Ventana 5 segundos</div>
+            <div class="flow-codes"><span class="tag tp">B</span><span class="tag tp">C</span><span class="tag tp">D</span><span class="tag tp">J</span><span class="tag tp">K</span></div>
+          </div>
+        </div>
+        <div class="flow-arrow"><svg width="26" height="14" viewBox="0 0 26 14"><path d="M0 7L18 7M14 3L22 7L14 11" stroke="var(--purple)" stroke-width="1.5" fill="none"/></svg></div>
+        <div class="flow-node">
+          <div class="flow-box" style="border-top:2px solid var(--green);animation:pulse-border 2s ease infinite">
+            <div class="flow-phase">Fase 5</div>
+            <div class="flow-name">Score → Alerta</div>
+            <div style="font-size:11px;color:var(--text2)">Threshold + multiplicadores</div>
+            <div class="flow-codes"><span class="tag tr">S</span><span class="tag tg">SQ ×1.5</span><span class="tag tg">VIG ×3</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PARALELO -->
+      <div style="margin-top:18px;padding:14px 18px;background:var(--deep);border:1px solid var(--border);border-left:2px solid var(--amber);border-radius:2px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--amber);text-transform:uppercase;letter-spacing:.1em;flex-shrink:0">⬤ Siempre activo</span>
+        <span class="tag ta">N DISTRACTOR</span><span class="tag ta">W PANTALLA</span>
+        <span class="tag ta">GR COORDINACIÓN</span><span class="tag ta">V FORMACIÓN V</span>
+        <div style="width:1px;height:14px;background:var(--border2);margin:0 4px"></div>
+        <span class="tag tc">P1 BOLSILLO</span><span class="tag tc">P2 BRAZOS CRUZADOS</span>
+        <span class="tag tp">MP PINCH GRIP</span>
+        <span class="tag tg tnew">🔍 VIGILANCIA ×3</span>
+      </div>
+
+      <!-- MULTIPLICADORES -->
+      <div style="margin-top:18px;display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:12px;align-items:center;">
+        <div style="background:var(--deep);border:1px solid var(--border);border-radius:2px;padding:14px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--text3);margin-bottom:8px;">SIN CONTEXTO</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2)">Bolsillo → <span style="color:var(--amber)">+20 pts</span></div>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);text-align:center">VS</div>
+        <div style="background:rgba(213,0,249,0.05);border:1px solid rgba(213,0,249,0.2);border-radius:2px;padding:14px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--purple);margin-bottom:8px;">POSTCONTACTO PREVIO</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2)">Bolsillo → <span style="color:var(--amber)">+20 pts</span></div>
+        </div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text3);text-align:center">VS</div>
+        <div style="background:rgba(0,230,118,0.05);border:1px solid rgba(0,230,118,0.25);border-radius:2px;padding:14px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--green);margin-bottom:8px;">VIGILANCIA + POSTCONTACTO</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2)">Bolsillo → <span style="color:var(--green);font-weight:700">+60 pts ×3 🔍</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ 02 — PIPELINE ══════════ -->
+<div class="section" id="sec-pipe">
+  <div class="sec-head">
+    <span class="sec-num">// 02</span>
+    <h2 class="sec-title">Pipeline Frame a Frame</h2>
+    <div class="sec-line"></div>
+  </div>
+  <div class="panel">
+    <div class="ph"></div>
+    <div class="pi">
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="how-dot" style="background:rgba(0,229,255,.08);border:1px solid var(--border2);color:var(--cyan)">01</div>
+          <div class="how-body">
+            <div class="how-title">Preproceso — Letterbox 640×640</div>
+            <div class="how-desc">Frame &lt;video&gt; → letterbox 640×640 con pad gris neutro → Float32Array [0,1] normalizado → Tensor ONNX [1,3,640,640] CHW. El pad gris evita bias de color en las esquinas.</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap"><span class="tag tc">640×640</span><span class="tag tc">Float32 CHW</span><span class="tag tc">Letterbox</span></div>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-dot" style="background:rgba(0,229,255,.08);border:1px solid var(--border2);color:var(--cyan)">02</div>
+          <div class="how-body">
+            <div class="how-title">Inferencia Paralela — Pose + Obj</div>
+            <div class="how-desc">Mismo tensor → dos modelos en paralelo. Pose: [1,56,8400] → 4 bbox + 1 conf + 51 kp (17×3). Obj: [1,N,8400] → 4 bbox + N clases. Execution Provider: WebGL → WASM fallback automático.</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap"><span class="tag tg">YOLOE 1200+</span><span class="tag ta">YOLO fallback 80</span><span class="tag tp">WebGL EP</span></div>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-dot" style="background:rgba(0,230,118,.08);border:1px solid rgba(0,230,118,.3);color:var(--green)">03</div>
+          <div class="how-body">
+            <div class="how-title" style="display:flex;align-items:center;gap:8px">Smoothing de Keypoints <span class="tnew tag">Nuevo v7.0</span></div>
+            <div class="how-desc">Antes de cualquier análisis: EMA (media móvil exponencial, α=1/3) sobre cada uno de los 17 keypoints. Si un KP desaparece, se interpola con confianza degradada por hasta 4 frames. Elimina el ruido de compresión de video y las caídas momentáneas de confianza en cámaras de baja calidad sin tocar los thresholds de inferencia.</div>
+            <div class="imp-before-after">
+              <div class="iba before"><span class="iba-lbl">ANTES v6.1</span>Muñeca tiembla → detección errática de bolsillo</div>
+              <div class="iba after"><span class="iba-lbl">AHORA v7.0</span>EMA 3fr → posición estable → cero falsos negativos por ruido</div>
+            </div>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-dot" style="background:rgba(0,229,255,.08);border:1px solid var(--border2);color:var(--cyan)">04</div>
+          <div class="how-body">
+            <div class="how-title">ObjTracker — Seguimiento Agnóstico</div>
+            <div class="how-desc">Rastrea objetos por IOU ≥ 0.28, no por label. Elimina label-flipping (taza→botella→taza). 14 frames de historial de visibilidad. O2 confirma cuando visibilidad baja de ≥60% a ≤0% post-contacto. Filtro de bolsa estática (v7.0): descarta BAG sin movimiento por 45+ frames.</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap"><span class="tag tc">IOU tracking</span><span class="tag tc">14fr history</span><span class="tag tg">Anti-fake-bag v7.0</span></div>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-dot" style="background:rgba(213,0,249,.08);border:1px solid rgba(213,0,249,.3);color:var(--purple)">05</div>
+          <div class="how-body">
+            <div class="how-title">MediaPipe Hand — cada 2 frames</div>
+            <div class="how-desc">21 landmarks por mano, hasta 4 manos. Carga lazy desde CDN sin bloquear pipeline. Pinch = dist(THUMB_TIP, INDEX_TIP) &lt; 0.06 normalizado. Palma orientada hacia adentro post-contacto = ocultamiento activo. Si CDN falla → ignorado silenciosamente.</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap"><span class="tag tp">21 landmarks</span><span class="tag tp">Pinch 0.06</span><span class="tag tp">GPU delegate</span></div>
+          </div>
+        </div>
+        <div class="how-step">
+          <div class="how-dot" style="background:rgba(255,23,68,.08);border:1px solid rgba(255,23,68,.3);color:var(--red)">06</div>
+          <div class="how-body">
+            <div class="how-title">29 Comportamientos + Score</div>
+            <div class="how-desc">Por cada track activo: 29 reglas verificadas en secuencia. Score 0–100 acumulativo con decay proporcional. Alta vigilancia multiplica ×3. Secuencia completa multiplica ×1.5. Al cruzar threshold → ROBO CONFIRMADO, reset a 15% del threshold.</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap"><span class="tag tr">Threshold por perfil</span><span class="tag tg">×1.5 secuencia</span><span class="tag tg">×3 vigilancia</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ 03 — SCORE ══════════ -->
+<div class="section" id="sec-score">
+  <div class="sec-head">
+    <span class="sec-num">// 03</span>
+    <h2 class="sec-title">Score por Comportamiento</h2>
+    <div class="sec-line"></div>
+    <span class="sec-tag">Pts base · vigilancia ×3</span>
+  </div>
+  <div class="panel"><div class="ph"></div><div style="padding:24px 28px;display:flex;flex-direction:column;gap:8px" id="scoreChart"></div></div>
+</div>
+
+<!-- ══════════ 04 — CATÁLOGO ══════════ -->
+<div class="section" id="sec-catalog">
+  <div class="sec-head">
+    <span class="sec-num">// 04</span>
+    <h2 class="sec-title">Catálogo de Comportamientos</h2>
+    <div class="sec-line"></div>
+    <span class="sec-tag">29 reglas activas</span>
+  </div>
+  <div class="panel" style="overflow:auto;max-height:560px"><div class="ph"></div>
+    <table class="beh-table"><thead><tr>
+      <th>COD</th><th>Nombre</th><th>Descripción técnica</th>
+      <th>Severidad</th><th>Pts</th><th>Zona</th><th>Versión</th>
+    </tr></thead><tbody id="behTable"></tbody></table>
+  </div>
+</div>
+
+<!-- ══════════ 05 — MODELOS ══════════ -->
+<div class="section" id="sec-models">
+  <div class="sec-head">
+    <span class="sec-num">// 05</span>
+    <h2 class="sec-title">Modelos de IA</h2>
+    <div class="sec-line"></div>
+  </div>
+  <div class="model-grid">
+    <div class="mc"><div class="mc-stripe" style="background:linear-gradient(90deg,var(--cyan),transparent)"></div>
+      <div class="mc-top"><div><div class="mc-name">YOLO26n — Pose</div><div class="mc-file">yolo26n-pose.onnx</div></div><span class="tag tg">● ACTIVO</span></div>
+      <div class="mc-sg">
+        <div class="ms"><span class="ms-lbl">Output</span><span class="ms-val">[1,56,8400]</span></div>
+        <div class="ms"><span class="ms-lbl">Keypoints</span><span class="ms-val">17 × 3</span></div>
+        <div class="ms"><span class="ms-lbl">CONF_POSE</span><span class="ms-val">0.25</span></div>
+        <div class="ms"><span class="ms-lbl">KP_THRESH</span><span class="ms-val">0.18</span></div>
+        <div class="ms"><span class="ms-lbl">KP Smooth</span><span class="ms-val" style="color:var(--green)">EMA 3fr</span></div>
+        <div class="ms"><span class="ms-lbl">KP Interp</span><span class="ms-val" style="color:var(--green)">4 frames</span></div>
+      </div>
+      <div class="mc-desc">17 keypoints COCO. KP_THRESH 0.18 calibrado para cámaras de baja calidad. Nuevo en v7.0: cada keypoint pasa por filtro EMA antes del análisis, e interpolación lineal de hasta 4 frames cuando la confianza cae por debajo del umbral.</div>
+    </div>
+    <div class="mc"><div class="mc-stripe" style="background:linear-gradient(90deg,var(--green),transparent)"></div>
+      <div class="mc-top"><div><div class="mc-name">YOLOE26n — Objetos</div><div class="mc-file">yoloe26n.onnx → fallback yolo26n.onnx</div></div><span class="tag tg">YOLOE</span></div>
+      <div class="mc-sg">
+        <div class="ms"><span class="ms-lbl">Clases</span><span class="ms-val">1200+ LVIS</span></div>
+        <div class="ms"><span class="ms-lbl">CONF_OBJ</span><span class="ms-val">0.30</span></div>
+        <div class="ms"><span class="ms-lbl">Modo</span><span class="ms-val">Prompt-free</span></div>
+        <div class="ms"><span class="ms-lbl">BAG minConf</span><span class="ms-val">0.50</span></div>
+        <div class="ms"><span class="ms-lbl">Static filter</span><span class="ms-val" style="color:var(--green)">45 frames</span></div>
+        <div class="ms"><span class="ms-lbl">Scale filter</span><span class="ms-val" style="color:var(--green)">8% cuerpo</span></div>
+      </div>
+      <div class="mc-desc">Vocabulario LVIS re-parametrizado. Nuevo v7.0: filtro doble anti-falsas-bolsas — descarta objetos BAG que no se mueven por 45 frames (fondo estático) y los que miden menos del 8% de la altura de la persona (micro-etiquetas de YOLO).</div>
+    </div>
+    <div class="mc"><div class="mc-stripe" style="background:linear-gradient(90deg,var(--purple),transparent)"></div>
+      <div class="mc-top"><div><div class="mc-name">MediaPipe Hand</div><div class="mc-file">CDN tasks-vision@0.10.0</div></div><span class="tag tp">LAZY</span></div>
+      <div class="mc-sg">
+        <div class="ms"><span class="ms-lbl">Landmarks</span><span class="ms-val">21 / mano</span></div>
+        <div class="ms"><span class="ms-lbl">Manos</span><span class="ms-val">Hasta 4</span></div>
+        <div class="ms"><span class="ms-lbl">Pinch dist</span><span class="ms-val">0.06 norm</span></div>
+        <div class="ms"><span class="ms-lbl">Frecuencia</span><span class="ms-val">c/2 frames</span></div>
+        <div class="ms"><span class="ms-lbl">Delegate</span><span class="ms-val">GPU</span></div>
+        <div class="ms"><span class="ms-lbl">Fallo</span><span class="ms-val">Ignorado</span></div>
+      </div>
+      <div class="mc-desc">Prueba reina del hurto: si los dedos forman pinch grip sobre un estante y luego la mano va al cuerpo → robo confirmado aunque YOLO no haya detectado el producto. Carga asíncrona en background sin bloquear el pipeline.</div>
+    </div>
+    <div class="mc"><div class="mc-stripe" style="background:linear-gradient(90deg,var(--amber),transparent)"></div>
+      <div class="mc-top"><div><div class="mc-name">ObjTracker + Vigilancia</div><div class="mc-file">Módulo interno — v7.0</div></div><span class="tag ta">INTERNO</span></div>
+      <div class="mc-sg">
+        <div class="ms"><span class="ms-lbl">IOU mín</span><span class="ms-val">0.28</span></div>
+        <div class="ms"><span class="ms-lbl">Historial</span><span class="ms-val">14 frames</span></div>
+        <div class="ms"><span class="ms-lbl">Vigilancia</span><span class="ms-val" style="color:var(--green)">8 000ms</span></div>
+        <div class="ms"><span class="ms-lbl">Mult. vig.</span><span class="ms-val" style="color:var(--green)">× 3.0</span></div>
+        <div class="ms"><span class="ms-lbl">Seq mult.</span><span class="ms-val">× 1.5</span></div>
+        <div class="ms"><span class="ms-lbl">Exit memory</span><span class="ms-val">30 000ms</span></div>
+      </div>
+      <div class="mc-desc">Nuevo v7.0: estado de Alta Vigilancia activado por escaneo de entorno. Durante 8s, los scores se multiplican ×3. Sin postContacto previo, el bolsillo solo multiplica ×1.5 máximo (probablemente el teléfono). Con postContacto confirmado → ×3 completo.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ 06 — PERFILES ══════════ -->
+<div class="section" id="sec-profiles">
+  <div class="sec-head">
+    <span class="sec-num">// 06</span>
+    <h2 class="sec-title">Perfiles de Local</h2>
+    <div class="sec-line"></div>
+    <span class="sec-tag">Menor threshold = más sensible</span>
+  </div>
+  <div class="panel"><div class="ph"></div><div class="pi"><div id="threshChart"></div></div></div>
+</div>
+
+<!-- ══════════ 07 — FAMILIAS ══════════ -->
+<div class="section" id="sec-families">
+  <div class="sec-head">
+    <span class="sec-num">// 07</span>
+    <h2 class="sec-title">Familias de Objetos</h2>
+    <div class="sec-line"></div>
+    <span class="sec-tag">COCO IDs 0–79 + LVIS 80–999</span>
+  </div>
+  <div class="fam-grid" id="famGrid"></div>
+</div>
+
+<!-- ══════════ 08 — MEJORAS ══════════ -->
+<div class="section" id="sec-mejoras">
+  <div class="sec-head">
+    <span class="sec-num">// 08</span>
+    <h2 class="sec-title">Historial de Mejoras</h2>
+    <div class="sec-line"></div>
+  </div>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;">⬤ v7.0 — Nuevas en esta versión</div>
+  <div class="imp-list" id="impListNew"></div>
+  <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin:22px 0 14px;">// v6.0 / v6.1 — Versiones anteriores</div>
+  <div class="imp-list" id="impListOld"></div>
+</div>
+
+<!-- ══════════ 09 — PARÁMETROS ══════════ -->
+<div class="section" id="sec-params">
+  <div class="sec-head">
+    <span class="sec-num">// 09</span>
+    <h2 class="sec-title">Parámetros del Motor</h2>
+    <div class="sec-line"></div>
+  </div>
+  <div class="param-grid">
+    <div class="pb"><div class="pb-title">// Inferencia + Smoothing</div><div id="params1"></div></div>
+    <div class="pb"><div class="pb-title">// Tracking, Score + Vigilancia</div><div id="params2"></div></div>
+  </div>
+</div>
+
+<!-- ══════════ FOOTER ══════════ -->
+<div class="footer">
+  <div class="footer-brand">Veexion <span>v7.0</span></div>
+  <div class="footer-info">YOLO26n +YOLOE + MediaPipe + ONNX Runtime Web · Browser-native · <span id="ft"></span></div>
+</div>
+
+</div><!-- /wrap -->
+
+<script>
+// ── Timestamp ───────────────────────────────────────────────────
+function upd(){
+  const s=new Date().toISOString().replace('T',' ').slice(0,19)+' UTC';
+  const el=document.getElementById('ts'); if(el) el.innerHTML=`REF: SSIP-FT-002<br>FECHA: ${s}<br>VERSIÓN: 7.0.STABLE`;
+  const f=document.getElementById('ft'); if(f) f.textContent=s;
+}
+upd(); setInterval(upd,1000);
+
+// ── Nav tabs ────────────────────────────────────────────────────
+document.querySelectorAll('.nav-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    const target=document.getElementById(tab.dataset.sec);
+    if(target) target.scrollIntoView({behavior:'smooth',block:'start'});
+  });
+});
+// Actualizar tab activo al scroll
+const sections=['sec-plain','sec-flow','sec-pipe','sec-score','sec-catalog','sec-models','sec-profiles','sec-families','sec-mejoras','sec-params'];
+window.addEventListener('scroll',()=>{
+  let active='sec-plain';
+  for(const id of sections){
+    const el=document.getElementById(id);
+    if(el&&el.getBoundingClientRect().top<100) active=id;
+  }
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.toggle('active',t.dataset.sec===active));
+},{ passive:true });
+
+// ── BG Canvas ───────────────────────────────────────────────────
+const cv=document.getElementById('bg-canvas');
+const ctx2=cv.getContext('2d');
+function resizeBg(){cv.width=innerWidth;cv.height=innerHeight;}
+resizeBg(); addEventListener('resize',resizeBg);
+const pts=Array.from({length:55},()=>({x:Math.random(),y:Math.random(),vx:(Math.random()-.5)*.0003,vy:(Math.random()-.5)*.0003,r:Math.random()*1.5+.5,o:Math.random()*.35+.08}));
+function drawBg(){
+  ctx2.clearRect(0,0,cv.width,cv.height);
+  const W=cv.width,H=cv.height;
+  ctx2.strokeStyle='rgba(0,229,255,.025)'; ctx2.lineWidth=1;
+  for(let x=0;x<W;x+=60){ctx2.beginPath();ctx2.moveTo(x,0);ctx2.lineTo(x,H);ctx2.stroke();}
+  for(let y=0;y<H;y+=60){ctx2.beginPath();ctx2.moveTo(0,y);ctx2.lineTo(W,y);ctx2.stroke();}
+  pts.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0)p.x=1; if(p.x>1)p.x=0; if(p.y<0)p.y=1; if(p.y>1)p.y=0;
+    ctx2.beginPath(); ctx2.arc(p.x*W,p.y*H,p.r,0,Math.PI*2);
+    ctx2.fillStyle=`rgba(0,229,255,${p.o})`; ctx2.fill();
+  });
+  for(let i=0;i<pts.length;i++) for(let j=i+1;j<pts.length;j++){
+    const dx=(pts[i].x-pts[j].x)*W,dy=(pts[i].y-pts[j].y)*H,d=Math.hypot(dx,dy);
+    if(d<110){ctx2.beginPath();ctx2.moveTo(pts[i].x*W,pts[i].y*H);ctx2.lineTo(pts[j].x*W,pts[j].y*H);ctx2.strokeStyle=`rgba(0,229,255,${.05*(1-d/110)})`;ctx2.lineWidth=.5;ctx2.stroke();}
+  }
+  requestAnimationFrame(drawBg);
+}
+drawBg();
+
+// ── Score chart ─────────────────────────────────────────────────
+const scoreData=[
+  {l:'Arrebato (G)',v:52,c:'#ff1744',new:false},
+  {l:'Traspaso (F)',v:48,c:'#ff1744',new:false},
+  {l:'Bag Stuffing (C)',v:43,c:'#ff6d00',new:false},
+  {l:'Objeto Tomado (O2)',v:38,c:'#ff6d00',new:false},
+  {l:'Manga (B)',v:33,c:'#d500f9',new:false},
+  {l:'Bajo Ropa (D)',v:33,c:'#d500f9',new:false},
+  {l:'Cadera (K)',v:33,c:'#d500f9',new:false},
+  {l:'Agachado (J)',v:28,c:'#d500f9',new:false},
+  {l:'Pantalla I/W',v:23,c:'#ffab00',new:false},
+  {l:'Perm. Zona (Z2)',v:18,c:'#ffab00',new:false},
+  {l:'Pinch Grip MP',v:18,c:'#d500f9',new:false},
+  {l:'Merodeo (E)',v:18,c:'#00e5ff',new:false},
+  {l:'Escaneo (H)',v:9,c:'#00e5ff',new:false},
+  {l:'Trayectoria (T)',v:7,c:'#00e5ff',new:false},
+  {l:'Vigilancia activa',v:60,c:'#00e676',new:true},
+];
+const maxS=Math.max(...scoreData.map(s=>s.v));
+const sc=document.getElementById('scoreChart');
+sc.innerHTML=scoreData.map(s=>`
+<div class="srow" style="${s.new?'background:rgba(0,230,118,0.03);border-radius:3px;padding:2px 4px;':''}">
+  <span class="srow-lbl" style="${s.new?'color:var(--green)':''}">
+    ${s.new?'🆕 ':''}${s.l}
+    ${s.new?'<span style="font-size:8px;color:var(--green);opacity:.7"> ×3 otros</span>':''}
+  </span>
+  <div class="sbar-bg"><div class="sbar-fill" data-w="${(s.v/maxS*100).toFixed(1)}" style="background:${s.c};width:0%;${s.new?'box-shadow:0 0 8px rgba(0,230,118,0.4)':''}"></div></div>
+  <span class="spts" style="${s.new?'color:var(--green)':''}">${s.new?'×3':'+'+ s.v}</span>
+</div>`).join('');
+
+// ── Behavior table ──────────────────────────────────────────────
+const behs=[
+  ['Z1','Mano en Zona','Muñeca en polígono ≥2 frames','LOW','—',true,'v5'],
+  ['Z2','Permanencia','Mano en zona > dwellTime perfil','HIGH','+18',true,'v5'],
+  ['Z3','Escape al Torso','Muñeca sale de zona hacia cuerpo','HIGH','+20',true,'v5'],
+  ['P1','Mano en Bolsillo','Muñeca cerca de cadera ≥10fr','HIGH','+10-20',false,'v5'],
+  ['P2','Brazos Cruzados','Codos cruzados + muñeca de baja conf.','HIGH','+13',false,'v5'],
+  ['O1','Contacto Objeto','Muñeca sobre objeto alerta ≥400ms','LOW','+13',true,'v5'],
+  ['O2','Objeto Tomado','Objeto desaparece post-contacto','HIGH','+38',true,'v5'],
+  ['A','Caja → Bolsillo','Mano sale de zona pago → cadera/manga','HIGH','+35',true,'v5'],
+  ['B','Bajo Manga','Post-contacto: muñeca sube por encima del codo','HIGH','+33',false,'v5'],
+  ['C','Bag Stuffing','Post-contacto: muñeca a <0.14 de bolso','HIGH','+43',false,'v5'],
+  ['D','Bajo Ropa','Post-contacto: muñeca en torso ampliado','HIGH','+33',false,'v5'],
+  ['E','Merodeo','3+ accesos misma zona en 90s sin caja','MED','+18',true,'v5'],
+  ['F','Traspaso','Objeto desaparece + persona a <0.22','HIGH','+48',false,'v5'],
+  ['G','Arrebato','Contacto + desaparición en <700ms','HIGH','+52',true,'v5'],
+  ['H','Escaneo','Movimiento lateral cabeza std>0.06','MED','+9',false,'v5'],
+  ['I','Pantalla Corporal','De espaldas (nariz inv.) + mano en zona','HIGH','+23',true,'v5'],
+  ['J','Agachado','Post-contacto: nariz baja del punto medio torso','HIGH','+28',false,'v5'],
+  ['K','Cadera/Bermuda','Post-contacto: muñeca <0.22 cadera + mov','HIGH','+33',false,'v5'],
+  ['N','Distractor','Cómplice en pago mientras otro tiene postContact','HIGH','+28',true,'v5'],
+  ['T','Trayectoria','Mano en zona en <1.5s desde aparición','LOW','+7',true,'v5'],
+  ['W','Pantalla Humana','Cómplice interpuesto entre cámara y zona','HIGH','+25',true,'v5'],
+  ['MP','Pinch Grip','MediaPipe: agarre pulgar-índice en zona','HIGH','+18',true,'v6.0'],
+  ['SQ','Secuencia','H→Z→ocultamiento en <30s → ×1.5','HIGH','×1.5',true,'v6.0'],
+  ['GR','Coordinación','2+ personas escaneo simultáneo <0.4','HIGH','+20',false,'v6.0'],
+  ['V','Formación V','3+ personas cubriendo ángulo cámara','HIGH','+15',false,'v6.0'],
+  ['VIG','Alta Vigilancia','Multiplicador ×3 post-escaneo (8s)','HIGH','×3',false,'v7.0'],
+  ['BAG-F','Bolsa Falsa','Descarta BAG estática/micro (anti-bias)','—','FP−',true,'v7.0'],
+  ['KP-S','KP Smooth','EMA 3fr + interpolación 4fr por keypoint','—','FN−',false,'v7.0'],
+  ['PC+','Post-Cont.+','Sin contacto previo → bolsillo conservador','HIGH','mod',false,'v7.0'],
+];
+const scMap={HIGH:'tr',MED:'ta',LOW:'tc'};
+const vMap={'v7.0':'tg tnew','v6.0':'tp','v5':'tc'};
+const bt=document.getElementById('behTable');
+bt.innerHTML=behs.map(b=>`
+<tr style="${b[6]==='v7.0'?'background:rgba(0,230,118,.02)':''}">
+  <td><span class="bcode">${b[0]}</span></td>
+  <td style="color:var(--white);font-weight:600">${b[1]}</td>
+  <td style="font-size:12px">${b[2]}</td>
+  <td><span class="tag ${scMap[b[3]]||'tc'}">${b[3]}</span></td>
+  <td class="pts">${b[4]}</td>
+  <td><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${b[5]?'var(--green)':'var(--text3)'}"></span></td>
+  <td><span class="tag ${vMap[b[6]]||'tc'}">${b[6]}</span></td>
+</tr>`).join('');
+
+// ── Threshold chart ─────────────────────────────────────────────
+const profiles=[
+  {i:'💎',n:'Joyería',t:50,c:'#ff1744'},{i:'📦',n:'Depósito',t:55,c:'#ff3d00'},
+  {i:'📱',n:'Electrónica',t:58,c:'#ff6d00'},{i:'⛽',n:'Estación 24h',t:58,c:'#ff6d00'},
+  {i:'☕',n:'Kiosco',t:60,c:'#ffab00'},{i:'💊',n:'Farmacia',t:62,c:'#ffab00'},
+  {i:'🏬',n:'Bazar',t:66,c:'#ffdd00'},{i:'🏪',n:'Genérico',t:68,c:'#c6ff00'},
+  {i:'📚',n:'Librería',t:70,c:'#69ff47'},{i:'🛒',n:'Supermercado',t:70,c:'#69ff47'},
+  {i:'👕',n:'Ropa',t:72,c:'#00e676'},{i:'🍳',n:'Cocina',t:78,c:'#00e5ff'},
+];
+const tc=document.getElementById('threshChart');
+tc.innerHTML=profiles.map(p=>`
+<div class="gauge-row">
+  <div class="gauge-lbl">${p.i} ${p.n}</div>
+  <div class="gauge-bg"><div class="gauge-fill" data-w="${p.t}%" style="background:${p.c};width:0%"></div></div>
+  <div class="gauge-num">${p.t}</div>
+</div>`).join('');
+
+// ── Families ────────────────────────────────────────────────────
+const fams=[
+  {i:'📦',k:'SMALL',l:'Objeto Pequeño',conf:'0.38',ids:'botella, taza, spray, frasco, perfume',c:'#00e5ff'},
+  {i:'🛒',k:'MEDIUM',l:'Objeto',conf:'0.36',ids:'copa, celular, libro, billetera, caja',c:'#00e5ff'},
+  {i:'🎒',k:'BAG',l:'Bolso/Mochila',conf:'0.50',ids:'mochila, bolso, valija, riñonera',c:'#ffab00'},
+  {i:'💻',k:'TECH',l:'Dispositivo',conf:'0.32',ids:'laptop, tablet, auricular, cámara',c:'#d500f9'},
+  {i:'💍',k:'JEWELRY',l:'Joya/Reloj',conf:'0.45',ids:'reloj, anillo, collar, pulsera',c:'#ffd700'},
+  {i:'🍫',k:'FOOD',l:'Alimento',conf:'0.38',ids:'snack, chocolate, lata, bebida',c:'#00e676'},
+  {i:'💄',k:'COSMETIC',l:'Cosmético',conf:'0.40',ids:'labial, crema, desodorante, base',c:'#ff4081'},
+  {i:'💊',k:'PHARMA',l:'Medicamento',conf:'0.42',ids:'caja med., blíster, frasco farmacéutico',c:'#ff1744'},
+  {i:'👕',k:'CLOTHING',l:'Prenda',conf:'0.38',ids:'remera, pantalón, campera, gorra',c:'#ff9100'},
+  {i:'🔧',k:'TOOL',l:'Herramienta',conf:'0.40',ids:'destornillador, llave, cuchillo',c:'#90a4ae'},
+];
+const fg=document.getElementById('famGrid');
+fg.innerHTML=fams.map(f=>`
+<div class="fc">
+  <div class="fc-icon">${f.i}</div>
+  <div class="fc-key" style="color:${f.c}">${f.k}</div>
+  <div class="fc-label">${f.l}</div>
+  <div class="fc-conf"><span style="color:${f.c}">■</span> conf ≥ ${f.conf}</div>
+  <div class="fc-ids">${f.ids}</div>
+  <div class="fc-bar" style="background:${f.c};opacity:.3"></div>
+</div>`).join('');
+
+// ── Improvements NEW v7 ─────────────────────────────────────────
+const impsNew=[
+  {tag:'M8 — KP SMOOTH',title:'Suavizado EMA + Interpolación de Keypoints',desc:'Filtro EMA (α=1/3) sobre cada keypoint antes de analizar. Si un KP desaparece (muñeca cubierta), se interpola con confianza degradada linealmente por hasta 4 frames. Inspirado en PoseLift WACV2025. Elimina el ruido de cámaras de baja calidad sin tocar thresholds de inferencia.',before:'Muñeca tiembla → bolsillo no se detecta → falso negativo constante',after:'EMA 3fr + interp → posición estable → cero falsos negativos por ruido'},
+  {tag:'M9 — VIGILANCIA ×3',title:'Estado de Alta Vigilancia post-escaneo',desc:'Al detectar escaneo (_checkScanBehavior), llama a _enterVigilance() que activa estado de 8000ms. _addScoreVigilant() multiplica cualquier score por 3.0 durante esa ventana. Implementa "cualquier gesto sospechoso después de mirada de vigilancia vale el triple".',before:'Escaneo + bolsillo = 9 + 20 = 29 pts (sin alerta)',after:'Escaneo activa vigilancia → bolsillo = 9 + 60 = 69 pts → ALERTA'},
+  {tag:'M10 — ANTI-FALSAS BOLSAS',title:'Filtro dinámico de objetos BAG estáticos y micro',desc:'_isRealBag(obj, t) con dos filtros: (1) Escala: bag.height < 8% de person.height → descartada. (2) Movimiento: si bbox no se movió >0.005 norm en 45 frames → fondo estático. Soluciona el "todo detecta como mochila" de YOLO en escenas con bolsas de fondo.',before:'Bolsa en estante → YOLO etiqueta → bag stuffing falso-positivo',after:'Bolsa estática 45fr → descartada → bag stuffing solo con bolsas reales'},
+  {tag:'M3+ — POST-CONT. OBLIGATORIO',title:'Lógica Post-Contacto obligatoria mejorada',desc:'Sin postContact previo: bolsillo suma score conservador (×1.5 máximo con vigilancia). Con postContact confirmado: multiplica ×3 full. Implementa "si el sistema no vio que tocó algo primero, el bolsillo probablemente es el teléfono".',before:'Bolsillo siempre sumaba igual independiente del contexto',after:'Sin contacto previo → ×1.5 máx. Con contacto + vigilancia → ×3 full'},
+];
+const il=document.getElementById('impListNew');
+il.innerHTML=impsNew.map(m=>`
+<div class="imp new-v7">
+  <span class="imp-tag green">${m.tag}</span>
+  <div>
+    <div class="imp-title">${m.title}</div>
+    <div class="imp-desc">${m.desc}</div>
+    <div class="imp-before-after">
+      <div class="iba before"><span class="iba-lbl">ANTES</span>${m.before}</div>
+      <div class="iba after"><span class="iba-lbl">AHORA</span>${m.after}</div>
+    </div>
+  </div>
+</div>`).join('');
+
+const impsOld=[
+  {tag:'M1 — YOLOE',title:'Auto-upgrade a 1200+ clases LVIS',desc:'Intenta yoloe26n.onnx. Si existe → vocabulario LVIS activo. Si no → yolo26n.onnx (80 COCO). Postproceso idéntico, overhead cero.'},
+  {tag:'M2 — MediaPipe',title:'21 landmarks/mano — pinch grip + palma',desc:'CDN lazy. Pinch = dist(THUMB_TIP, INDEX_TIP) < 0.06. Palma hacia adentro post-contacto = ocultamiento. Suma score si disponible.'},
+  {tag:'M3 — Intención',title:'Filtro direccional post-salida de zona',desc:'Vector muñeca vs vector hacia cuerpo (dot product). Mano hacia afuera → sin postContact. Mano hacia torso/cadera → sospechoso.'},
+  {tag:'M4 — 90 frames',title:'Historial ampliado a 90 frames (~6s)',desc:'Detecta secuencias completas que antes caían fuera de ventana. Delay táximo del ladrón metódico cubierto.'},
+  {tag:'M5 — ×1.5',title:'Multiplicador de secuencia completa',desc:'H→Z→ocultamiento en <30s = score ×1.5. Premia secuencias completas sobre eventos aislados.'},
+  {tag:'M6 — Velocidad',title:'Historial de velocidad de muñeca',desc:'Velocidad calculada en ventana 8 frames. Base para diferenciación pick lento vs arrebato rápido.'},
+  {tag:'M7 — Grupo',title:'Coordinación grupal + formación en V',desc:'2+ personas escaneo simultáneo <0.4 dist → +20 pts c/u. 3+ personas cubriendo ángulo → +15 pts.'},
+  {tag:'CAL — v6.1',title:'Calibración cámaras de baja calidad',desc:'KP_THRESH 0.25→0.18 · CONF_POSE 0.30→0.25 · Pocket fallback bbox · zoneEntryFrames mín. 2 · BAG minConf 0.33→0.50.'},
+];
+const il2=document.getElementById('impListOld');
+il2.innerHTML=impsOld.map(m=>`
+<div class="imp">
+  <span class="imp-tag">${m.tag}</span>
+  <div><div class="imp-title">${m.title}</div><div class="imp-desc">${m.desc}</div></div>
+</div>`).join('');
+
+// ── Params ──────────────────────────────────────────────────────
+const p1=[
+  ['INPUT_W / INPUT_H','640 × 640 px',false],['CONF_POSE','0.25',false],
+  ['CONF_OBJ','0.30',false],['KP_THRESH','0.18',false],
+  ['IOU_THRESH','0.45',false],['KP_SMOOTH_FRAMES','3',true],
+  ['KP_INTERP_MAX_GAP','4 frames',true],['BAG_MIN_SCALE','8% persona',true],
+  ['BAG_STATIC_FRAMES','45 frames',true],
+];
+const p2=[
+  ['MAX_HISTORY','90 frames (~6s)',false],['OBJ_VIS_WINDOW','14 frames',false],
+  ['SEQ_WINDOW_MS','30 000 ms',false],['SEQ_MULTIPLIER','× 1.5',false],
+  ['VIGILANCE_WINDOW_MS','8 000 ms',true],['VIGILANCE_MULTIPLIER','× 3.0',true],
+  ['EXIT_SCORE_MEMORY','30 000 ms',false],['HAND_PINCH_DIST','0.06 norm',false],
+];
+document.getElementById('params1').innerHTML=p1.map(([k,v,n])=>`
+<div class="pr">
+  <span class="pr-key">${k}${n?' <span style="font-size:8px;color:var(--green)">▲</span>':''}</span>
+  <span class="pr-val ${n?'new':''}">${v}</span>
+</div>`).join('');
+document.getElementById('params2').innerHTML=p2.map(([k,v,n])=>`
+<div class="pr">
+  <span class="pr-key">${k}${n?' <span style="font-size:8px;color:var(--green)">▲</span>':''}</span>
+  <span class="pr-val ${n?'new':''}">${v}</span>
+</div>`).join('');
+
+// ── Animate bars ────────────────────────────────────────────────
+const io=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting) return;
+    e.target.querySelectorAll('[data-w]').forEach(el=>{
+      setTimeout(()=>{el.style.transition='width 1.4s cubic-bezier(.22,1,.36,1)';el.style.width=el.dataset.w;},120);
+    });
+    io.unobserve(e.target);
+  });
+},{threshold:.1});
+document.querySelectorAll('.panel,.pb').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>

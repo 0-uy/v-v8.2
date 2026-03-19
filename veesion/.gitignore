@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Entornos
+.venv/
+venv/
+env/
+
+# Modelos
+models/*.pt
+models/*.pth
+models/*.onnx
+models/datasets/
+
+# DB
+*.db
+*.sqlite
+
+# Env
+.env
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
