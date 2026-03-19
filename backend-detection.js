@@ -21,7 +21,7 @@ const BACKEND_WS = (
   window.VEESION_BACKEND_URL ||
   (location.hostname === 'localhost' || location.hostname === '127.0.0.1'
     ? 'ws://localhost:8000'
-    : 'wss://veesion-backend.fly.dev')
+    : 'wss://veesion-backend.onrender.com')
 ).replace(/^http/, 'ws');
 
 const BACKEND_HTTP = BACKEND_WS.replace(/^wss:/, 'https:').replace(/^ws:/, 'http:');

@@ -20,12 +20,12 @@
  */
 
 // URL del backend — se puede sobreescribir antes de importar:
-//   window.VEESION_BACKEND_URL = 'wss://mi-backend.fly.dev';
+//   window.VEESION_BACKEND_URL = 'wss://mi-backend.;
 const BACKEND_URL = (
   window.VEESION_BACKEND_URL ||
   (location.hostname === 'localhost'
     ? 'ws://localhost:8000'
-    : 'wss://veesion-backend.fly.dev')   // ← reemplazar con tu URL de Fly.io
+    : 'wss://veesion-backend.onrender.com')   
 ).replace(/^http/, 'ws');
 
 const FRAME_INTERVAL_MS = 80;    // ~12.5 fps al backend
