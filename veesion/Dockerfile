@@ -18,7 +18,7 @@ COPY . .
 
 RUN mkdir -p models
 
-ENV PORT=8000
-EXPOSE 8000
+ENV PORT=10000
+EXPOSE 10000
 
-CMD ["sh", "-c", "python descargar_modelos.py && uvicorn main:app --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "python descargar_modelos.py && uvicorn main:app --host 0.0.0.0 --port ${PORT}"]
