@@ -20,8 +20,55 @@ import { DetectionEngine } from './backend-detection.js';
 import { AlertManager }    from './alerts.js';
 import { CameraSource, DeviceSelector, savePref } from './camera-manager.js';
 import { listProfiles } from './store-profiles.js';
+import { StartupLoader } from './startup-loader.js';
 
-// ── Reloj ─────────────────────────────────────────────────────────────────
+// ── Startup loader — multicámara ─────────────────────────────────────────
+const _mcLoader = new StartupLoader({
+  title:    'Preparando análisis multicámara',
+  subtitle: 'Iniciando detección base y conectando con el sistema',
+  steps: [
+    { key: 'backend',   label: 'Conectando con backend'       },
+    { key: 'websocket', label: 'WebSocket de análisis'        },
+    { key: 'models',    label: 'Cargando detección base'      },
+    { key: 'ready',     label: 'Sistema multicámara listo'    },
+  ],
+  extras: [
+    { icon: '🧠', label: 'GitHub model',     note: 'activable por cámara' },
+    { icon: '🎯', label: 'Shoplifting YOLO', note: 'apoyo visual extra'  },
+  ],
+});
+_mcLoader.loading('backend');
+
+// Si el backend tarda → cambiar subtítulo
+const _mcSlowTimer = setTimeout(() => {
+  _mcLoader.setSubtitle('Despertando servidor… puede tomar unos segundos en Render 💤');
+}, 2200);
+
+// Backend + WebSocket se resuelven solos (no hay un WS explícito al arranque
+// de multicam, el check HTTP es lo que confirma vida del backend).
+// Simulamos el handshake con un fetch al health del backend y avanzamos.
+(async () => {
+  try {
+    const WS_BASE = (
+      window.VEESION_BACKEND_URL ||
+      (location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+        ? 'http://localhost:8000'
+        : 'https://veesion-backend.onrender.com')
+    ).replace(/^ws/, 'http');
+
+    const res = await Promise.race([
+      fetch(`${WS_BASE}/`, { method: 'GET', signal: AbortSignal.timeout(12000) }),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 12000)),
+    ]);
+    clearTimeout(_mcSlowTimer);
+    _mcLoader.done('backend');
+    setTimeout(() => _mcLoader.done('websocket'), 250);
+  } catch {
+    clearTimeout(_mcSlowTimer);
+    _mcLoader.fail('backend', 'Backend no disponible — análisis local activo');
+    setTimeout(() => _mcLoader.done('websocket'), 300); // avanzar igual
+  }
+})();
 setInterval(() => {
   const el = document.getElementById('hTime');
   if (el) el.textContent = new Date().toLocaleTimeString('es-UY', { hour12: false });
@@ -230,11 +277,17 @@ function initMultiCam(empresaId, plan, setFb) {
               <span class="p-sval" id="sldCoolVal${i}">8s</span>
             </div>
             
-            <!-- [GITHUB] Toggle para activar/desactivar detector pesado -->
+            <!-- Modelos extra — arrancan siempre OFF por cámara -->
             <div class="p-divider"></div>
             <div class="p-row" style="justify-content:space-between;">
               <span class="p-lbl" style="color:#00e676;">🧠 GHB model</span>
               <button id="btnGithub${i}" class="p-tab" style="width:60px; padding:3px; border-radius:20px;" data-active="false">
+                <span>OFF</span>
+              </button>
+            </div>
+            <div class="p-row" style="justify-content:space-between;">
+              <span class="p-lbl" style="color:#ffaa00;">🎯 SL model</span>
+              <button id="btnShoplifting${i}" class="p-tab" style="width:60px; padding:3px; border-radius:20px;" data-active="false">
                 <span>OFF</span>
               </button>
             </div>
@@ -392,6 +445,39 @@ function initMultiCam(empresaId, plan, setFb) {
         btnGithub.querySelector('span').textContent = newState ? 'ON' : 'OFF';
         
         cam.de.setGithubEnabled(newState);
+      });
+    }
+
+    // [SHOPLIFTING] Toggle YOLO por cámara — siempre OFF al arrancar
+    const btnShoplifting = document.getElementById(`btnShoplifting${cam.idx}`);
+    if (btnShoplifting) {
+      btnShoplifting.dataset.active = 'false';
+      btnShoplifting.style.background  = 'transparent';
+      btnShoplifting.style.borderColor = 'var(--border)';
+      btnShoplifting.style.color       = 'var(--sub)';
+      btnShoplifting.querySelector('span').textContent = 'OFF';
+
+      btnShoplifting.addEventListener('click', () => {
+        const isActive = btnShoplifting.dataset.active === 'true';
+        const newState = !isActive;
+
+        btnShoplifting.dataset.active    = String(newState);
+        btnShoplifting.style.background  = newState ? 'rgba(255,170,0,0.12)' : 'transparent';
+        btnShoplifting.style.borderColor = newState ? '#ffaa00' : 'var(--border)';
+        btnShoplifting.style.color       = newState ? '#ffaa00' : 'var(--sub)';
+        btnShoplifting.querySelector('span').textContent = newState ? 'ON' : 'OFF';
+
+        if (typeof cam.de.setShopliftingEnabled === 'function') {
+          cam.de.setShopliftingEnabled(newState);
+        }
+
+        toast(
+          newState
+            ? `🎯 Cam ${cam.idx + 1} — YOLO Shoplifting activado`
+            : `Cam ${cam.idx + 1} — YOLO Shoplifting desactivado`,
+          newState ? 'warn' : 'info',
+          2000
+        );
       });
     }
 
@@ -898,6 +984,7 @@ document.querySelectorAll('.p-tab').forEach(btn => {
     // Animación de progreso mientras carga
     let posePct = 0;
     setSysStatus('Cargando modelo IA…', 'loading');
+    _mcLoader.loading('models');
     const poseAnim = setInterval(() => {
       posePct = Math.min(posePct + Math.random() * 4, 85);
       poseBar.style.width = posePct + '%';
@@ -923,11 +1010,18 @@ document.querySelectorAll('.p-tab').forEach(btn => {
       poseStatus.textContent = '✓ listo';
       poseStatus.style.color = 'var(--green)';
       setSysStatus('Modelo IA listo ✓', 'ok', 3000);
+      _mcLoader.done('models');
+      setTimeout(() => {
+        _mcLoader.done('ready');
+        _mcLoader.close(500);
+      }, 350);
     } else {
       poseBar.classList.add('err');
       poseStatus.textContent = '✗ error';
       poseStatus.style.color = 'var(--danger)';
       setSysStatus('Error cargando modelo IA', 'err');
+      _mcLoader.fail('models', 'Error al cargar modelos IA');
+      _mcLoader.close(2500);
     }
 
     setTimeout(() => {

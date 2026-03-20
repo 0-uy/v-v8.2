@@ -198,12 +198,47 @@ export class DetectionEngine {
     );
   }
 
+  setShopliftingEnabled(enabled) {
+    this._shopliftingEnabled = enabled;
+    this._send({
+      type: 'shoplifting_toggle',
+      enabled
+    });
+    console.log(
+      `%c🎯 Shoplifting YOLO ${enabled ? 'ACTIVADO' : 'DESACTIVADO'}`,
+      enabled ? 'color:#ffaa00' : 'color:#5a7a90'
+    );
+  }
+
   // ── Mensajes del backend ──────────────────────────────────────────────────
   _onMessage(msg) {
     if (msg.type === 'pong') return;
 
     if (msg.type === 'status') {
       console.log(`%c🤖 Modelos: ${msg.ready ? 'listos ✓' : 'cargando...'}`, 'color:#00d4ff');
+      // Confirmar que los modelos extra arrancan en OFF
+      if (msg.shopliftingEnabled === false) {
+        console.log('%c🎯 Shoplifting YOLO: OFF (default)', 'color:#5a7a90');
+      }
+      if (msg.githubEnabled === false) {
+        console.log('%c🧠 GitHub model: OFF (default)', 'color:#5a7a90');
+      }
+      return;
+    }
+
+    if (msg.type === 'github_toggle_ack') {
+      console.log(
+        `%c🧠 GitHub backend confirmado: ${msg.enabled ? 'ON' : 'OFF'}`,
+        msg.enabled ? 'color:#00e676' : 'color:#5a7a90'
+      );
+      return;
+    }
+
+    if (msg.type === 'shoplifting_toggle_ack') {
+      console.log(
+        `%c🎯 Shoplifting YOLO backend confirmado: ${msg.enabled ? 'ON — modelo cargando…' : 'OFF'}`,
+        msg.enabled ? 'color:#ffaa00' : 'color:#5a7a90'
+      );
       return;
     }
 

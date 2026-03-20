@@ -11,8 +11,31 @@
 import { CameraSource, DeviceSelector, savePref } from './camera-manager.js';
 import { listProfiles, getProfile } from './store-profiles.js';
 import { onAuth, guardarEvento } from './firebase-config.js';
+import { StartupLoader } from './startup-loader.js';
 
 export async function initApp({ ZoneManager, DetectionEngine, AlertManager }) {
+  // ── Startup loader ────────────────────────────────────────────────────────
+  const _loader = new StartupLoader({
+    title:    'Iniciando motor de análisis',
+    subtitle: 'Preparando detección base y conectando al backend',
+    steps: [
+      { key: 'backend',   label: 'Conectando con backend'  },
+      { key: 'websocket', label: 'WebSocket de análisis'   },
+      { key: 'models',    label: 'Cargando detección base' },
+      { key: 'ready',     label: 'Sistema listo'           },
+    ],
+    extras: [
+      { icon: '🧠', label: 'GitHub model',     note: 'consume más recursos' },
+      { icon: '🎯', label: 'Shoplifting YOLO', note: 'apoyo visual extra'  },
+    ],
+  });
+  _loader.loading('backend');
+
+  // Render puede tardar en despertar → cambiar subtítulo si pasa de 2 s
+  const _slowTimer = setTimeout(() => {
+    _loader.setSubtitle('Despertando servidor… puede tomar unos segundos en Render 💤');
+  }, 2200);
+
   // DOM refs
   const video          = document.getElementById('videoElement');
   const canvas         = document.getElementById('overlayCanvas');
@@ -73,6 +96,11 @@ try {
 
   websocket.onopen = () => {
     console.log('%c🔌 WebSocket conectado', 'color:#00ff94');
+    clearTimeout(_slowTimer);
+    _loader.done('backend');
+    _loader.loading('websocket');
+    setTimeout(() => _loader.done('websocket'), 280);
+
     if (stateWebsocket) {
       stateWebsocket.textContent = 'Conectado';
       stateWebsocket.className = 'state-val ok';
@@ -89,6 +117,10 @@ try {
 
     websocket.onerror = (error) => {
       console.error('WebSocket error:', error);
+      clearTimeout(_slowTimer);
+      _loader.fail('backend', 'Backend no disponible — análisis local activo');
+      _loader.done('websocket'); // avanzar igual; el análisis local sigue funcionando
+
       if (stateWebsocket) {
         stateWebsocket.textContent = 'Error';
         stateWebsocket.className = 'state-val err';
@@ -151,6 +183,48 @@ try {
 
       detection.setGithubEnabled(newState);
       _toast(`Detector GitHub ${newState ? 'activado' : 'desactivado'}`, newState ? 'ok' : 'info', 1800);
+    });
+  }
+
+  // ── Toggle Shoplifting YOLO ──────────────────────────────────────────────
+  const btnShoplifting = document.getElementById('btnShopliftingToggle');
+  if (btnShoplifting) {
+    // Arrancar siempre en OFF — nunca precargado
+    btnShoplifting.dataset.active = 'false';
+    btnShoplifting.style.background  = 'transparent';
+    btnShoplifting.style.borderColor = 'var(--border)';
+    btnShoplifting.style.color       = 'var(--sub)';
+    const slSpan = btnShoplifting.querySelector('span');
+    if (slSpan) slSpan.textContent = 'OFF';
+
+    btnShoplifting.addEventListener('click', () => {
+      const isActive = btnShoplifting.dataset.active === 'true';
+      const newState = !isActive;
+
+      btnShoplifting.dataset.active    = String(newState);
+      btnShoplifting.style.background  = newState ? 'rgba(255,170,0,0.12)' : 'transparent';
+      btnShoplifting.style.borderColor = newState ? '#ffaa00' : 'var(--border)';
+      btnShoplifting.style.color       = newState ? '#ffaa00' : 'var(--sub)';
+      if (slSpan) slSpan.textContent   = newState ? 'ON' : 'OFF';
+
+      // Notificar al backend vía WebSocket
+      if (websocket && websocket.readyState === WebSocket.OPEN) {
+        websocket.send(JSON.stringify({
+          type: 'shoplifting_toggle',
+          cameraId: currentCameraId,
+          enabled: newState,
+        }));
+      }
+
+      // Reflejo local (frontend avisa a DetectionEngine si tiene soporte)
+      if (typeof detection.setShopliftingEnabled === 'function') {
+        detection.setShopliftingEnabled(newState);
+      }
+
+      const label = newState
+        ? '🎯 YOLO Shoplifting activado — cargando modelo…'
+        : 'YOLO Shoplifting desactivado';
+      _toast(label, newState ? 'warn' : 'info', 2200);
     });
   }
 
@@ -717,6 +791,7 @@ try {
   }
 
   _setSysStatus('Cargando modelo IA…', 'loading');
+  _loader.loading('models');
 
   try {
     await detection.init();
@@ -726,6 +801,14 @@ try {
       stateModel.className = 'state-val ok';
     }
     _setSysStatus('Modelo IA listo ✓', 'ok', 3000);
+
+    // ── Loader: éxito ──
+    _loader.done('models');
+    setTimeout(() => {
+      _loader.done('ready');
+      _loader.close(500);
+    }, 350);
+
   } catch (e) {
     if (stateModel) {
       stateModel.textContent = 'Error';
@@ -733,6 +816,10 @@ try {
     }
     _setSysStatus('Error al cargar modelo IA', 'err', 6000);
     console.error('Error cargando modelo IA:', e);
+
+    // ── Loader: error (se cierra igual después de un momento) ──
+    _loader.fail('models', 'Error al cargar modelos IA');
+    _loader.close(2500);
   }
 
   btnDetection?.addEventListener('click', () => {

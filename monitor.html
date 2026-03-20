@@ -285,12 +285,28 @@
             <div class="state-item"><span class="state-label">Modelo IA</span><span class="state-val" id="stateModel">Cargando YOLOv26…</span></div>
           </div>
         </div>
-          <div style="display:flex; align-items:center; gap:6px; margin-left:5px; margin-top: 6px;" id="githubToggleContainer">
-  <span style="font-size:10px; color:#5a7a90; letter-spacing:1px; ">🧠GHB model</span>
-  <button id="btnGithubToggle" class="ctrl-btn toggle-btn" style="width:50px; padding:3px; border-radius:20px;" data-active="false">
-    <span>OFF</span>
-  </button>
-</div>
+          <!-- ── Modelos extra — arrancan siempre OFF ── -->
+        <div style="display:flex; flex-direction:column; gap:5px; margin-left:5px; margin-top:6px;">
+
+          <div style="display:flex; align-items:center; gap:6px;" id="githubToggleContainer">
+            <span style="font-size:10px; color:#5a7a90; letter-spacing:1px;">🧠 GHB model</span>
+            <button id="btnGithubToggle" class="ctrl-btn toggle-btn"
+              style="width:50px; padding:3px; border-radius:20px;"
+              data-active="false" title="Detector GitHub — consume más recursos">
+              <span>OFF</span>
+            </button>
+          </div>
+
+          <div style="display:flex; align-items:center; gap:6px;" id="shopliftingToggleContainer">
+            <span style="font-size:10px; color:#5a7a90; letter-spacing:1px;">🎯 SL model</span>
+            <button id="btnShopliftingToggle" class="ctrl-btn toggle-btn"
+              style="width:50px; padding:3px; border-radius:20px;"
+              data-active="false" title="YOLO Shoplifting — apoyo visual extra">
+              <span>OFF</span>
+            </button>
+          </div>
+
+        </div>
         <div class="side-card">
           <h3 class="card-title">Métricas · Sesión</h3>
           <div class="metrics-row">
@@ -899,6 +915,6 @@
   </script>
 
   <script type="module" src="tabs.js"></script>
-
+  <script type="module" src="startup-loader.js"></script>
 </body>
 </html>

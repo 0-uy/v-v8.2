@@ -51,8 +51,13 @@ _INTERACTIONS = {}
 _POCKETS = {}
 _ZONES = {}
 
-_DETECTOR_GITHUB = None
-_SHOPLIFTING_MODEL = None
+_GITHUB_ENABLED = {}
+_SHOPLIFTING_ENABLED = {}
+
+# ── Los modelos pesados son lazy: se cargan solo cuando el usuario
+#    activa el toggle desde el panel. Nunca al arrancar el proceso.
+_DETECTOR_GITHUB = None     # lazy — carga al primer github_toggle enabled=True
+_SHOPLIFTING_MODEL = None   # lazy — carga al primer shoplifting_toggle enabled=True
 
 _FUSION_ENGINE = FusionEngine()
 _last_thumbs: dict = {}  # camera_id → último thumbnail generado
@@ -388,7 +393,6 @@ async def process_frame(camera_id, frame_bytes, frame_count):
             prev = behavior_scores_by_track_id.get(analyzer_track_id, 0.0)
             behavior_scores_by_track_id[analyzer_track_id] = max(prev, w)
 
-        # fallback por índice interno, solo si coincide
         if analyzer_track_id is not None and isinstance(analyzer_track_id, int):
             if 0 <= analyzer_track_id < len(tracks):
                 prev = behavior_scores_by_index.get(analyzer_track_id, 0.0)
@@ -407,7 +411,6 @@ async def process_frame(camera_id, frame_bytes, frame_count):
     tracker = get_tracker(camera_id)
     state["tracks"] = tracker.update(tracks)
 
-    # inyectar behavior_score priorizando source_track_id / source_index
     for track in state["tracks"]:
         score = 0.0
 
@@ -420,7 +423,6 @@ async def process_frame(camera_id, frame_bytes, frame_count):
         if source_index in behavior_scores_by_index:
             score = max(score, behavior_scores_by_index[source_index])
 
-        # fallback final por bbox
         if score <= 0.0:
             best_score = 0.0
             best_iou = 0.0
@@ -442,17 +444,14 @@ async def process_frame(camera_id, frame_bytes, frame_count):
 
         track["behavior_score"] = round(score, 2)
 
-    # PRODUCT INTERACTION
     interaction_detector = get_interaction_detector(camera_id)
     interaction_events = interaction_detector.detect(state["tracks"])
     events.extend(interaction_events)
 
-    # POCKET DETECTOR
     pocket_detector = get_pocket_detector(camera_id)
     pocket_events = pocket_detector.detect(state["tracks"])
     events.extend(pocket_events)
 
-    # REID
     reid = get_reid(camera_id)
 
     for track in state["tracks"]:
@@ -468,10 +467,8 @@ async def process_frame(camera_id, frame_bytes, frame_count):
         track["reid_slot"] = new_slot
         track["id"] = new_slot
 
-    # eliminar duplicados de persona ya con score calculado
     state["tracks"] = _deduplicate_tracks(state["tracks"])
 
-    # TIMELINE
     timeline = get_timeline(camera_id)
 
     for track in state["tracks"]:
@@ -523,8 +520,8 @@ async def process_frame(camera_id, frame_bytes, frame_count):
                         }
                     )
 
-    # YOLO
-    if frame_count % SL_EVERY_N_FRAMES == 0:
+    # YOLO SHOPLIFTING SOLO SI ESTA ACTIVO
+    if _SHOPLIFTING_ENABLED.get(camera_id, False) and frame_count % SL_EVERY_N_FRAMES == 0:
         sl = await loop.run_in_executor(
             _executor,
             run_sl_yolo,
@@ -546,7 +543,7 @@ async def process_frame(camera_id, frame_bytes, frame_count):
     # GITHUB
     github_score = 0.0
 
-    if frame_count % GITHUB_EVERY_N_FRAMES == 0:
+    if _GITHUB_ENABLED.get(camera_id, False) and frame_count % GITHUB_EVERY_N_FRAMES == 0:
         try:
             detector = get_detector_github()
 
@@ -632,8 +629,6 @@ async def process_frame(camera_id, frame_bytes, frame_count):
             f"Cam {camera_id} | {elapsed:.0f} ms | {len(poses)} personas"
         )
 
-    # Guardar thumbnail cada 5 frames en variable de estado del proceso
-    # Solo se envía al frontend cuando hay alertas reales
     thumb_b64 = None
     try:
         if frame_count % 5 == 0:
@@ -671,7 +666,6 @@ async def read_mjpeg_stream(url: str, camera_id: int, websocket: WebSocket, fram
                 async for chunk in response.aiter_bytes(chunk_size=8192):
                     buffer += chunk
 
-                    # Extraer todos los frames JPEG completos del buffer
                     while True:
                         start = buffer.find(b'\xff\xd8')
                         if start == -1:
@@ -684,18 +678,18 @@ async def read_mjpeg_stream(url: str, camera_id: int, websocket: WebSocket, fram
                         buffer = buffer[end + 2:]
 
                         if len(frame_bytes) < 100:
-                            continue  # frame corrupto
+                            continue
 
                         frame_count_ref[0] += 1
 
                         try:
                             state, events, thumb = await process_frame(camera_id, frame_bytes, frame_count_ref[0])
                             msg = {
-                                "type":       "detection",
-                                "cameraId":   camera_id,
+                                "type": "detection",
+                                "cameraId": camera_id,
                                 "frameIndex": frame_count_ref[0],
-                                "state":      state,
-                                "events":     events,
+                                "state": state,
+                                "events": events,
                             }
                             if thumb:
                                 msg["thumb"] = thumb
@@ -706,7 +700,6 @@ async def read_mjpeg_stream(url: str, camera_id: int, websocket: WebSocket, fram
                             logger.warning(f"Cam {camera_id} error enviando detección: {e}")
                             return
 
-                        # ~15 fps máximo para no saturar el servidor
                         await asyncio.sleep(0.067)
 
     except asyncio.CancelledError:
@@ -734,18 +727,31 @@ async def handle_camera_ws(websocket: WebSocket, camera_id: int):
 
     logger.info(f"WS conectado cam {camera_id}")
 
-    get_shoplifting_model()
-    get_detector_github()
+    # ── Ambos modelos pesados apagados por defecto ──────────────────────────
+    # El frontend debe activarlos explícitamente con github_toggle / shoplifting_toggle.
+    # get_detector_github() y get_shoplifting_model() NO se llaman aquí.
+    _GITHUB_ENABLED[camera_id]      = False
+    _SHOPLIFTING_ENABLED[camera_id] = False
+
+    logger.info(
+        f"Cam {camera_id} — GitHub: OFF | Shoplifting YOLO: OFF "
+        f"(modelos extra desactivados por defecto)"
+    )
 
     try:
         await websocket.send_json(
-            {"type": "status", "ready": inference_engine.ready}
+            {
+                "type": "status",
+                "ready": inference_engine.ready,
+                "githubEnabled": False,
+                "shopliftingEnabled": False,
+            }
         )
     except Exception:
         return
 
     frame_count = 0
-    frame_count_ref = [0]  # referencia mutable para el task MJPEG
+    frame_count_ref = [0]
 
     try:
         async for raw in websocket.iter_text():
@@ -771,7 +777,7 @@ async def handle_camera_ws(websocket: WebSocket, camera_id: int):
                 )
 
                 try:
-                    msg = {
+                    out_msg = {
                         "type": "detection",
                         "cameraId": camera_id,
                         "frameIndex": frame_count,
@@ -779,20 +785,17 @@ async def handle_camera_ws(websocket: WebSocket, camera_id: int):
                         "events": events,
                     }
                     if thumb:
-                        msg["thumb"] = thumb
-                    await websocket.send_json(msg)
+                        out_msg["thumb"] = thumb
+                    await websocket.send_json(out_msg)
                 except WebSocketDisconnect:
                     break
                 except Exception:
                     break
 
             elif t == "ip_stream":
-                # El frontend manda la URL y el backend lee el stream directamente.
-                # Así se evita CORS/canvas completamente para cámaras IP.
                 url = msg.get("url", "").strip()
                 protocol = msg.get("protocol", "mjpeg")
 
-                # Cancelar stream previo si existía
                 prev = _IP_TASKS.get(camera_id)
                 if prev and not prev.done():
                     prev.cancel()
@@ -813,6 +816,55 @@ async def handle_camera_ws(websocket: WebSocket, camera_id: int):
                         break
                 else:
                     logger.warning(f"Cam {camera_id} protocolo '{protocol}' no soportado en backend-read mode")
+
+            elif t == "github_toggle":
+                enabled = bool(msg.get("enabled", False))
+                _GITHUB_ENABLED[camera_id] = enabled
+
+                logger.info(
+                    f"Cam {camera_id} detector GitHub "
+                    f"{'activado' if enabled else 'desactivado'}"
+                )
+
+                if enabled:
+                    get_detector_github()
+
+                try:
+                    await websocket.send_json({
+                        "type": "github_toggle_ack",
+                        "cameraId": camera_id,
+                        "enabled": enabled
+                    })
+                except WebSocketDisconnect:
+                    break
+                except Exception:
+                    break
+
+            elif t == "shoplifting_toggle":
+                enabled = bool(msg.get("enabled", False))
+                _SHOPLIFTING_ENABLED[camera_id] = enabled
+
+                logger.info(
+                    f"Cam {camera_id} YOLO shoplifting "
+                    f"{'activado' if enabled else 'desactivado'}"
+                )
+
+                if enabled:
+                    # Carga lazy — solo cuando el usuario activa el toggle
+                    logger.info(f"Cam {camera_id} — cargando YOLO shoplifting (primera vez o ya en caché)…")
+                    get_shoplifting_model()
+                    logger.info(f"Cam {camera_id} — YOLO shoplifting listo")
+
+                try:
+                    await websocket.send_json({
+                        "type": "shoplifting_toggle_ack",
+                        "cameraId": camera_id,
+                        "enabled": enabled
+                    })
+                except WebSocketDisconnect:
+                    break
+                except Exception:
+                    break
 
             elif t == "ip_stream_stop":
                 prev = _IP_TASKS.pop(camera_id, None)
@@ -852,10 +904,12 @@ async def handle_camera_ws(websocket: WebSocket, camera_id: int):
         logger.error(f"WS error cam {camera_id}: {e}")
 
     finally:
-        # Cancelar stream IP si sigue corriendo
         prev = _IP_TASKS.pop(camera_id, None)
         if prev and not prev.done():
             prev.cancel()
+
+        _GITHUB_ENABLED.pop(camera_id, None)
+        _SHOPLIFTING_ENABLED.pop(camera_id, None)
 
         total_frames = frame_count + frame_count_ref[0]
         logger.info(
